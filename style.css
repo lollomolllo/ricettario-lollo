@@ -195,59 +195,124 @@
 }
 
 /* ==========================================
-   FIX TEMA SCURO (Dark Mode Overrides)
+   TEMA "BOUTIQUE PASTICCERIA"
    ========================================== */
+
+:root {
+    /* 1. Il nuovo font di sistema */
+    --bs-font-sans-serif: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+    /* 2. Colori - Modalità Chiara */
+    --bs-primary: #C5832B;
+    /* Color Caramello / Oro Scuro */
+    --bs-primary-rgb: 197, 131, 43;
+    --bs-body-bg: #FCFBF9;
+    /* Sfondo Panna/Perla leggerissimo */
+    --bs-dark: #2B1D14;
+    /* Cioccolato Fondente per i testi/navbar */
+
+    /* 3. Arrotondamento più morbido e moderno */
+    --bs-border-radius: 0.85rem;
+    --bs-border-radius-lg: 1.2rem;
+    --bs-border-radius-sm: 0.5rem;
+}
+
+/* --- STILE ELEMENTI (Bottoni e Card) --- */
+
+/* Bottoni: Niente bordi duri, ombre morbide e animazione al passaggio del mouse */
+.btn {
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none !important;
+    padding: 0.6rem 1.2rem;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(197, 131, 43, 0.2);
+    /* Ombra dorata */
+}
+
+/* Adattamento bottoni Outline (Solo contorno) */
+.btn-outline-primary {
+    background-color: transparent;
+    border: 2px solid var(--bs-primary) !important;
+    color: var(--bs-primary);
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+/* Card che fluttuano elegantemente */
+.card {
+    border: none !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Animazione speciale solo per le card della galleria */
+.ricetta-card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Badge più eleganti */
+.badge {
+    font-weight: 600;
+    padding: 0.55em 0.85em;
+    letter-spacing: 0.5px;
+}
+
+/* ==========================================
+   TEMA SCURO (DARK MODE "MIDNIGHT CHOCOLATE")
+   ========================================== */
+
 [data-bs-theme="dark"] body {
-    background-color: #212529 !important;
-    color: #dee2e6 !important;
+    background-color: #1A1614 !important;
+    /* Antracite con punta di marrone */
+    color: #E8E6E3 !important;
+    /* Bianco sporco caldo */
 }
 
-/* Trasforma gli sfondi chiari in sfondi scuri eleganti */
 [data-bs-theme="dark"] .bg-light,
-[data-bs-theme="dark"] .bg-white {
-    background-color: #2b3035 !important;
-    color: #dee2e6 !important;
+[data-bs-theme="dark"] .bg-white,
+[data-bs-theme="dark"] .card,
+[data-bs-theme="dark"] .list-group-item {
+    background-color: #241F1C !important;
+    /* Grigio caldo per le card */
+    border-color: #38312D !important;
+    color: #E8E6E3 !important;
 }
 
-/* Inverti i testi neri in testi bianchi */
 [data-bs-theme="dark"] .text-dark {
-    color: #f8f9fa !important;
+    color: #F8F9FA !important;
 }
 
-/* Sistema i bordi per non farli sembrare troppo accesi */
 [data-bs-theme="dark"] .border,
 [data-bs-theme="dark"] .border-bottom,
 [data-bs-theme="dark"] .border-top {
-    border-color: #495057 !important;
+    border-color: #38312D !important;
 }
 
-/* Adatta le Card e le Liste al tema scuro */
-[data-bs-theme="dark"] .card,
-[data-bs-theme="dark"] .list-group-item {
-    background-color: #2b3035 !important;
-    color: #f8f9fa !important;
-    border-color: #495057 !important;
-}
-
-/* Aggiusta le righe a strisce (se presenti) */
-[data-bs-theme="dark"] .table {
-    --bs-table-bg: transparent;
-    --bs-table-color: #dee2e6;
-}
-
-/* Adatta gli input text che avevano lo sfondo grigio chiaro */
+/* Modifica agli input in Dark Mode */
 [data-bs-theme="dark"] .form-control,
 [data-bs-theme="dark"] .form-select,
 [data-bs-theme="dark"] .input-group-text {
-    background-color: #212529;
-    color: #dee2e6;
-    border-color: #495057;
+    background-color: #1A1614 !important;
+    border-color: #38312D !important;
+    color: #E8E6E3 !important;
 }
 
 [data-bs-theme="dark"] .form-control:focus,
 [data-bs-theme="dark"] .form-select:focus {
-    background-color: #2b3035;
-    color: #fff;
+    background-color: #241F1C !important;
+    border-color: var(--bs-primary) !important;
+    box-shadow: 0 0 0 0.25rem rgba(197, 131, 43, 0.25) !important;
+    color: #fff !important;
 }
 
 /* ==========================================
