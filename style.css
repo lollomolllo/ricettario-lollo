@@ -1,5 +1,126 @@
 /* ==========================================
-   1. STILI PER LA STAMPA (PDF)
+   TEMA BOUTIQUE PASTICCERIA (Elegante)
+   ========================================== */
+:root {
+    --bs-font-sans-serif: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --bs-body-bg: #FCFBF9;
+}
+
+/* Colori Caramello/Oro */
+.bg-primary {
+    background-color: #C5832B !important;
+    color: white !important;
+}
+
+.text-primary {
+    color: #C5832B !important;
+}
+
+.border-primary {
+    border-color: #C5832B !important;
+}
+
+.btn-primary {
+    background-color: #C5832B !important;
+    border-color: #C5832B !important;
+    color: white !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: #A66C20 !important;
+    border-color: #A66C20 !important;
+}
+
+.btn-outline-primary {
+    background-color: transparent !important;
+    border: 2px solid #C5832B !important;
+    color: #C5832B !important;
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+    background-color: #C5832B !important;
+    color: white !important;
+}
+
+/* Bottoni morbidi */
+.btn {
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 0.5rem;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(197, 131, 43, 0.2);
+}
+
+/* Card e Badge eleganti */
+.card {
+    border: none !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 1rem;
+}
+
+.ricetta-card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08) !important;
+}
+
+.badge {
+    font-weight: 600;
+    padding: 0.55em 0.85em;
+    letter-spacing: 0.5px;
+    border-radius: 0.5rem;
+}
+
+/* ==========================================
+   TEMA SCURO ("MIDNIGHT CHOCOLATE")
+   ========================================== */
+[data-bs-theme="dark"] body {
+    background-color: #1A1614 !important;
+    color: #E8E6E3 !important;
+}
+
+[data-bs-theme="dark"] .bg-light,
+[data-bs-theme="dark"] .bg-white,
+[data-bs-theme="dark"] .card,
+[data-bs-theme="dark"] .list-group-item {
+    background-color: #241F1C !important;
+    border-color: #38312D !important;
+    color: #E8E6E3 !important;
+}
+
+[data-bs-theme="dark"] .text-dark {
+    color: #F8F9FA !important;
+}
+
+[data-bs-theme="dark"] .border,
+[data-bs-theme="dark"] .border-bottom,
+[data-bs-theme="dark"] .border-top {
+    border-color: #38312D !important;
+}
+
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select,
+[data-bs-theme="dark"] .input-group-text {
+    background-color: #1A1614 !important;
+    border-color: #38312D !important;
+    color: #E8E6E3 !important;
+}
+
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+    background-color: #241F1C !important;
+    border-color: #C5832B !important;
+    box-shadow: 0 0 0 0.25rem rgba(197, 131, 43, 0.25) !important;
+    color: #fff !important;
+}
+
+/* ==========================================
+   STILI PER LA STAMPA (PDF)
    ========================================== */
 @media print {
 
@@ -80,7 +201,107 @@
 }
 
 /* ==========================================
-   2. MODALITÀ CUCINA (Mani in Pasta)
+   OTTIMIZZAZIONI MOBILE (IL SEGRETO PER L'APP)
+   ========================================== */
+#bottom-nav {
+    display: none !important;
+}
+
+@media (max-width: 767px) {
+
+    .navbar-toggler,
+    #navbarNav {
+        display: none !important;
+    }
+
+    body {
+        padding-bottom: 85px !important;
+    }
+
+    /* Barra di navigazione in basso */
+    #bottom-nav {
+        display: flex !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: var(--bs-body-bg);
+        border-top: 1px solid #dee2e6;
+        z-index: 1050;
+        justify-content: space-around;
+        padding: 10px 0 15px 0;
+    }
+
+    [data-bs-theme="dark"] #bottom-nav {
+        background-color: #1A1614;
+        border-top-color: #38312D;
+    }
+
+    .bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: #6c757d;
+        font-size: 0.75rem;
+        font-weight: bold;
+        transition: color 0.2s;
+    }
+
+    .bottom-nav-item.active {
+        color: #C5832B;
+        transform: scale(1.1);
+    }
+
+    /* Fix per i bottoni nella Dettaglio Ricetta */
+    .w-md-auto {
+        width: 100% !important;
+    }
+
+    .action-buttons-mobile {
+        width: 100% !important;
+        justify-content: space-between;
+    }
+
+    .action-buttons-mobile .btn {
+        flex: 1 1 45%;
+        /* Forza i bottoni a stare in una griglia 2x2 su telefono */
+        padding: 0.75rem 0.2rem;
+        font-size: 0.85rem;
+    }
+
+    #btn-torna-elenco {
+        padding: 0.75rem;
+        font-weight: bold;
+        border-radius: 0.5rem;
+    }
+
+    /* Fix form in inserimento */
+    #titolo-inserimento+div {
+        flex-direction: column;
+        width: 100%;
+        align-items: stretch !important;
+    }
+
+    #titolo-inserimento+div .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    /* Fix Calendario Scrollabile */
+    .calendario-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 10px;
+    }
+
+    .calendario-table-wrapper table {
+        min-width: 700px;
+    }
+}
+
+/* ==========================================
+   MODALITÀ CUCINA
    ========================================== */
 #cooking-mode-overlay {
     position: fixed;
@@ -168,201 +389,5 @@
     .cooking-step-card {
         font-size: 1.3rem;
         padding: 1.5rem;
-    }
-}
-
-/* ==========================================
-   3. TEMA BOUTIQUE PASTICCERIA (FORZATO)
-   ========================================== */
-:root {
-    --bs-font-sans-serif: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    --bs-body-bg: #FCFBF9;
-}
-
-/* Forziamo il colore Caramello/Oro su tutti gli elementi primary di Bootstrap */
-.bg-primary {
-    background-color: #C5832B !important;
-    color: white !important;
-}
-
-.text-primary {
-    color: #C5832B !important;
-}
-
-.border-primary {
-    border-color: #C5832B !important;
-}
-
-.btn-primary {
-    background-color: #C5832B !important;
-    border-color: #C5832B !important;
-    color: white !important;
-}
-
-.btn-primary:hover:not(:disabled) {
-    background-color: #A66C20 !important;
-    border-color: #A66C20 !important;
-}
-
-.btn-outline-primary {
-    background-color: transparent !important;
-    border: 2px solid #C5832B !important;
-    color: #C5832B !important;
-}
-
-.btn-outline-primary:hover:not(:disabled) {
-    background-color: #C5832B !important;
-    color: white !important;
-}
-
-/* Bottoni morbidi */
-.btn {
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 0.5rem;
-}
-
-.btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 15px rgba(197, 131, 43, 0.2);
-}
-
-/* Card che fluttuano elegantemente */
-.card {
-    border: none !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-radius: 1rem;
-}
-
-.ricetta-card:hover {
-    transform: translateY(-5px) !important;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08) !important;
-}
-
-.badge {
-    font-weight: 600;
-    padding: 0.55em 0.85em;
-    letter-spacing: 0.5px;
-    border-radius: 0.5rem;
-}
-
-/* ==========================================
-   4. TEMA SCURO ("MIDNIGHT CHOCOLATE")
-   ========================================== */
-[data-bs-theme="dark"] body {
-    background-color: #1A1614 !important;
-    color: #E8E6E3 !important;
-}
-
-[data-bs-theme="dark"] .bg-light,
-[data-bs-theme="dark"] .bg-white,
-[data-bs-theme="dark"] .card,
-[data-bs-theme="dark"] .list-group-item {
-    background-color: #241F1C !important;
-    border-color: #38312D !important;
-    color: #E8E6E3 !important;
-}
-
-[data-bs-theme="dark"] .text-dark {
-    color: #F8F9FA !important;
-}
-
-[data-bs-theme="dark"] .border,
-[data-bs-theme="dark"] .border-bottom,
-[data-bs-theme="dark"] .border-top {
-    border-color: #38312D !important;
-}
-
-[data-bs-theme="dark"] .form-control,
-[data-bs-theme="dark"] .form-select,
-[data-bs-theme="dark"] .input-group-text {
-    background-color: #1A1614 !important;
-    border-color: #38312D !important;
-    color: #E8E6E3 !important;
-}
-
-[data-bs-theme="dark"] .form-control:focus,
-[data-bs-theme="dark"] .form-select:focus {
-    background-color: #241F1C !important;
-    border-color: #C5832B !important;
-    box-shadow: 0 0 0 0.25rem rgba(197, 131, 43, 0.25) !important;
-    color: #fff !important;
-}
-
-/* ==========================================
-   5. OTTIMIZZAZIONI MOBILE (App Style)
-   ========================================== */
-/* Di default (su PC) la bottom nav deve sparire */
-#bottom-nav {
-    display: none !important;
-}
-
-@media (max-width: 767px) {
-
-    .navbar-toggler,
-    #navbarNav {
-        display: none !important;
-    }
-
-    body {
-        padding-bottom: 85px !important;
-    }
-
-    #bottom-nav {
-        display: flex !important;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background-color: var(--bs-body-bg);
-        border-top: 1px solid #dee2e6;
-        z-index: 1050;
-        justify-content: space-around;
-        padding: 10px 0 15px 0;
-    }
-
-    [data-bs-theme="dark"] #bottom-nav {
-        background-color: #1A1614;
-        border-top-color: #38312D;
-    }
-
-    .bottom-nav-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-decoration: none;
-        color: #6c757d;
-        font-size: 0.75rem;
-        font-weight: bold;
-        transition: color 0.2s;
-    }
-
-    .bottom-nav-item.active {
-        color: #C5832B;
-        transform: scale(1.1);
-    }
-
-    #titolo-inserimento+div {
-        flex-direction: column;
-        width: 100%;
-        align-items: stretch !important;
-    }
-
-    #titolo-inserimento+div .btn {
-        width: 100%;
-        margin-bottom: 8px;
-    }
-
-    .calendario-table-wrapper {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 10px;
-    }
-
-    .calendario-table-wrapper table {
-        min-width: 700px;
     }
 }

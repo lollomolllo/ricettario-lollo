@@ -5,11 +5,14 @@ const UI = {
 
     renderElenco: function () {
         this.container.innerHTML = `
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Elenco Ricette</h2>
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                <h2 class="mb-0 fw-bold">📚 Galleria Ricette</h2>
+                <button class="btn btn-primary shadow-sm fw-bold w-100 w-md-auto py-3 py-md-2" id="btn-nuova-ricetta-elenco">
+                    ➕ Crea Nuova Ricetta
+                </button>
             </div>
             
-            <div class="card mb-4 shadow-sm">
+            <div class="card mb-4 shadow-sm border-0 bg-white">
                 <div class="card-body row g-3 align-items-center">
                     <div class="col-md-3">
                         <input type="text" id="filtro-testo" class="form-control" placeholder="🔍 Cerca per nome...">
@@ -24,7 +27,7 @@ const UI = {
                             <option value="">Tutti i Tag</option>
                         </select>
                     </div>
-                    <div class="col-md-3 text-end">
+                    <div class="col-md-3 text-md-end text-center d-none d-md-block">
                         <div class="btn-group shadow-sm" role="group">
                             <button type="button" class="btn btn-outline-dark active" id="btn-view-grid" title="Vista a Card">
                                 <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M1 1h4v4H1V1zm5 0h4v4H6V1zm5 0h4v4h-4V1zM1 6h4v4H1V6zm5 0h4v4H6V6zm5 0h4v4h-4V6zM1 11h4v4H1v-4zm5 0h4v4H6v-4zm5 0h4v4h-4v-4z"/></svg>
@@ -324,9 +327,8 @@ const UI = {
     renderDettaglio: function (ricetta) {
         const catNome = ricetta.categorie ? ricetta.categorie.nome : 'Senza categoria';
         const imgUrl = ricetta.url_immagine || 'https://via.placeholder.com/800x400?text=Nessuna+Immagine';
-        const tagsHTML = ricetta.ricette_tags.map(rt => `<span class="badge bg-secondary me-1">${rt.tag.nome}</span>`).join('');
+        const tagsHTML = ricetta.ricette_tags.map(rt => `<span class="badge bg-secondary me-1 mb-1">${rt.tag.nome}</span>`).join('');
 
-        // Costruiamo la lista degli Step del procedimento
         let stepHTML = '';
         ricetta.procedimento.forEach(step => {
             stepHTML += `
@@ -342,27 +344,21 @@ const UI = {
         });
 
         this.container.innerHTML = `
-            <div class="mb-3 d-flex justify-content-between align-items-center d-print-none">
-                <button class="btn btn-outline-secondary btn-sm" id="btn-torna-elenco">← Torna alla Galleria</button>
-                <div>
-                    <button class="btn btn-warning btn-sm shadow-sm me-2 fw-bold" id="btn-cucina-ricetta">
-                        🧑‍🍳 Modalità Cucina
-                    </button>
-                    <button class="btn btn-outline-success btn-sm shadow-sm me-2" id="btn-stampa-ricetta">
-                        🖨️ Stampa / PDF
-                    </button>
-                    <button class="btn btn-outline-primary btn-sm shadow-sm me-2" id="btn-modifica-ricetta" data-id="${ricetta.id}">
-                        ✏️ Modifica
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm shadow-sm" id="btn-elimina-ricetta" data-id="${ricetta.id}" data-img="${ricetta.url_immagine || ''}">
-                        🗑 Elimina
-                    </button>
+            <div class="mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 d-print-none">
+                <button class="btn btn-outline-secondary btn-sm w-100 w-md-auto mb-2 mb-md-0 shadow-sm" id="btn-torna-elenco">
+                    ← Torna alla Galleria
+                </button>
+                <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-md-end action-buttons-mobile">
+                    <button class="btn btn-warning btn-sm shadow-sm fw-bold" id="btn-cucina-ricetta">🧑‍🍳 Cucina</button>
+                    <button class="btn btn-outline-success btn-sm shadow-sm" id="btn-stampa-ricetta">🖨️ Stampa</button>
+                    <button class="btn btn-outline-primary btn-sm shadow-sm" id="btn-modifica-ricetta" data-id="${ricetta.id}">✏️ Modifica</button>
+                    <button class="btn btn-outline-danger btn-sm shadow-sm" id="btn-elimina-ricetta" data-id="${ricetta.id}" data-img="${ricetta.url_immagine || ''}">🗑 Elimina</button>
                 </div>
             </div>
 
-            <div class="card shadow-sm border-0 mb-4">
+            <div class="card shadow-sm border-0 mb-4 overflow-hidden">
                 <img src="${imgUrl}" class="card-img-top" alt="${ricetta.nome}" style="max-height: 400px; object-fit: cover;">
-                <div class="card-body">
+                <div class="card-body p-4">
                     <h1 class="fw-bold display-5 mb-1">${ricetta.nome}</h1>
                     <h5 class="text-muted mb-3">${catNome}</h5>
                     <div class="mb-4">${tagsHTML}</div>
@@ -382,14 +378,14 @@ const UI = {
                         </div>
                     </div>
 
-                    ${ricetta.note ? `<div class="alert alert-info border-0 shadow-sm mb-0" style="white-space: pre-wrap;"><strong>Note:</strong><br>${ricetta.note}</div>` : ''}                </div>
+                    ${ricetta.note ? `<div class="alert alert-info border-0 shadow-sm mb-0" style="white-space: pre-wrap;"><strong>Note:</strong><br>${ricetta.note}</div>` : ''}
+                </div>
             </div>
 
             <div class="row align-items-start">
-                
                 <div class="col-lg-8 mb-4">
                     <div class="card shadow-sm border-0">
-                        <div class="card-body">
+                        <div class="card-body p-4">
                             <h3 class="fw-bold mb-4 border-bottom pb-2">Procedimento</h3>
                             ${stepHTML || '<p class="text-muted">Nessun procedimento inserito.</p>'}
                         </div>
@@ -398,20 +394,17 @@ const UI = {
 
                 <div class="col-lg-4 mb-4">
                     <div class="card shadow-sm border-primary sticky-top" style="top: 20px; z-index: 1;">
-                        <div class="card-header bg-primary text-white text-center">
+                        <div class="card-header bg-primary text-white text-center py-3">
                             <span class="fw-bold fs-5">INGREDIENTI</span>
                         </div>
-                        <div class="card-body bg-light">
+                        <div class="card-body bg-light p-4">
                             <label class="form-label fw-bold">Porzioni da produrre (${ricetta.unita_porzioni}):</label>
                             <div class="input-group input-group-lg mb-4 shadow-sm">
                                 <input type="number" step="0.1" class="form-control text-center fw-bold text-primary" id="input-ricalcolo" value="${ricetta.porzioni_base}">
                             </div>
 
-                            <ul class="list-group list-group-flush shadow-sm" id="lista-ingredienti-ricalcolati">
-                                </ul>
-                            
-                            <div id="container-sottoricette-ricalcolate">
-                                </div>
+                            <ul class="list-group list-group-flush shadow-sm rounded" id="lista-ingredienti-ricalcolati"></ul>
+                            <div id="container-sottoricette-ricalcolate"></div>
                         </div>
                     </div>
                 </div>

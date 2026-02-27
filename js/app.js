@@ -42,55 +42,40 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // --- 2. LA FUNZIONE CHE ACCENDE LA NAVBAR E LA BOTTOM NAV (MOBILE) ---
 function inizializzaNavbar() {
-    // Menu Desktop
     const navElenco = document.getElementById('nav-elenco');
-    const navInserimento = document.getElementById('nav-inserimento');
-    const navImpostazioni = document.getElementById('nav-impostazioni');
     const navCalendario = document.getElementById('nav-calendario');
     const navSpesa = document.getElementById('nav-spesa');
+    const navImpostazioni = document.getElementById('nav-impostazioni');
     const navLogout = document.getElementById('nav-logout');
 
-    // Menu Mobile (Bottom Nav)
     const botElenco = document.getElementById('bot-nav-elenco');
     const botCalendario = document.getElementById('bot-nav-calendario');
     const botSpesa = document.getElementById('bot-nav-spesa');
     const botImpostazioni = document.getElementById('bot-nav-impostazioni');
 
     function setActiveNav(tag) {
-        // Spegne tutti gli indicatori
-        [navElenco, navInserimento, navImpostazioni, navCalendario, navSpesa, botElenco, botCalendario, botSpesa, botImpostazioni].forEach(el => {
-            if (el) el.classList.remove('active');
-        });
-
-        // Accende sia quello su PC che quello su Mobile
+        document.querySelectorAll('.nav-link, .bottom-nav-item').forEach(el => el.classList.remove('active'));
         if (tag === 'elenco') { if (navElenco) navElenco.classList.add('active'); if (botElenco) botElenco.classList.add('active'); }
-        if (tag === 'inserimento') { if (navInserimento) navInserimento.classList.add('active'); }
         if (tag === 'calendario') { if (navCalendario) navCalendario.classList.add('active'); if (botCalendario) botCalendario.classList.add('active'); }
         if (tag === 'spesa') { if (navSpesa) navSpesa.classList.add('active'); if (botSpesa) botSpesa.classList.add('active'); }
         if (tag === 'impostazioni') { if (navImpostazioni) navImpostazioni.classList.add('active'); if (botImpostazioni) botImpostazioni.classList.add('active'); }
     }
 
-    // --- ASCOLTO CLICK NAVBAR DESKTOP (PC) ---
-    if (navElenco) navElenco.addEventListener('click', (e) => { e.preventDefault(); setActiveNav('elenco'); UI.renderElenco(); initElenco(); });
-    if (navCalendario) navCalendario.addEventListener('click', (e) => { e.preventDefault(); setActiveNav('calendario'); UI.renderCalendario(); initCalendario(); });
-    if (navSpesa) navSpesa.addEventListener('click', (e) => { e.preventDefault(); setActiveNav('spesa'); UI.renderSpesa(); initSpesa(); });
-    if (navInserimento) navInserimento.addEventListener('click', (e) => { e.preventDefault(); setActiveNav('inserimento'); UI.renderInserimento(); initInserimento(); });
-    if (navImpostazioni) navImpostazioni.addEventListener('click', (e) => { e.preventDefault(); setActiveNav('impostazioni'); UI.renderImpostazioni(); initImpostazioni(); });
+    const gestisciClick = (e, tag, renderFunc, initFunc) => {
+        if (e) e.preventDefault(); setActiveNav(tag); renderFunc(); if (initFunc) initFunc();
+    };
 
-    // --- ASCOLTO CLICK BOTTOM NAV (MOBILE) ---
-    if (botElenco) botElenco.addEventListener('click', (e) => { e.preventDefault(); setActiveNav('elenco'); UI.renderElenco(); initElenco(); });
-    if (botCalendario) botCalendario.addEventListener('click', (e) => { e.preventDefault(); setActiveNav('calendario'); UI.renderCalendario(); initCalendario(); });
-    if (botSpesa) botSpesa.addEventListener('click', (e) => { e.preventDefault(); setActiveNav('spesa'); UI.renderSpesa(); initSpesa(); });
-    if (botImpostazioni) botImpostazioni.addEventListener('click', (e) => { e.preventDefault(); setActiveNav('impostazioni'); UI.renderImpostazioni(); initImpostazioni(); });
+    if (navElenco) navElenco.addEventListener('click', (e) => gestisciClick(e, 'elenco', UI.renderElenco, initElenco));
+    if (navCalendario) navCalendario.addEventListener('click', (e) => gestisciClick(e, 'calendario', UI.renderCalendario, initCalendario));
+    if (navSpesa) navSpesa.addEventListener('click', (e) => gestisciClick(e, 'spesa', UI.renderSpesa, initSpesa));
+    if (navImpostazioni) navImpostazioni.addEventListener('click', (e) => gestisciClick(e, 'impostazioni', UI.renderImpostazioni, initImpostazioni));
 
-    // --- LOGOUT ---
-    if (navLogout) {
-        navLogout.addEventListener('click', async (e) => {
-            e.preventDefault();
-            await API.logout();
-            window.location.reload();
-        });
-    }
+    if (botElenco) botElenco.addEventListener('click', (e) => gestisciClick(e, 'elenco', UI.renderElenco, initElenco));
+    if (botCalendario) botCalendario.addEventListener('click', (e) => gestisciClick(e, 'calendario', UI.renderCalendario, initCalendario));
+    if (botSpesa) botSpesa.addEventListener('click', (e) => gestisciClick(e, 'spesa', UI.renderSpesa, initSpesa));
+    if (botImpostazioni) botImpostazioni.addEventListener('click', (e) => gestisciClick(e, 'impostazioni', UI.renderImpostazioni, initImpostazioni));
+
+    if (navLogout) { navLogout.addEventListener('click', async (e) => { e.preventDefault(); await API.logout(); window.location.reload(); }); }
 }
 
 // --- 3. GESTIONE INVIO FORM LOGIN (Sempre attiva) ---
@@ -585,6 +570,19 @@ async function initElenco() {
         const btnGrid = document.getElementById('btn-view-grid');
         const btnList = document.getElementById('btn-view-list');
 
+        // GESTIONE DEL NUOVO BOTTONE "CREA RICETTA" IN GALLERIA
+        const btnNuovaRicetta = document.getElementById('btn-nuova-ricetta-elenco');
+        if (btnNuovaRicetta) {
+            btnNuovaRicetta.addEventListener('click', () => {
+                idRicettaInModifica = null;
+                urlImmagineInModifica = null;
+                // Spegniamo tutti i menu per far capire che siamo in una "schermata a parte"
+                document.querySelectorAll('.nav-link, .bottom-nav-item').forEach(el => el.classList.remove('active'));
+                UI.renderInserimento();
+                initInserimento();
+            });
+        }
+
         // Aggiorniamo i bottoni graficamente in base alla preferenza
         if (currentView === 'list') {
             btnList.classList.add('active');
@@ -933,13 +931,13 @@ async function initCalendario() {
                 storico.forEach(s => {
                     const dataFormat = new Date(s.data_svolgimento).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
                     html += `
-                        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+                        <div class="list-group-item list-group-item-action d-flex flex-column flex-md-row justify-content-md-between align-items-start align-items-md-center py-3 gap-2">
                             <div>
                                 <h6 class="mb-1 fw-bold text-primary">${s.ricette.nome}</h6>
                                 <small class="text-muted">Prodotte: <strong>${s.porzioni_prodotte}</strong> porzioni</small>
                             </div>
-                            <div class="d-flex align-items-center">
-                                <span class="badge bg-light text-dark border me-3">${dataFormat}</span>
+                            <div class="d-flex w-100 w-md-auto justify-content-between justify-content-md-end align-items-center gap-3">
+                                <span class="badge bg-light text-dark border fs-6 shadow-sm">${dataFormat}</span>
                                 <button class="btn btn-sm btn-outline-danger shadow-sm btn-delete-produzione" data-id="${s.id}" title="Elimina dallo storico">🗑</button>
                             </div>
                         </div>
