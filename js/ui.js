@@ -83,7 +83,7 @@ const UI = {
                          style="cursor: pointer; background-color: var(--bs-tertiary-bg);" 
                          data-bs-toggle="collapse" data-bs-target="#${catId}">
                         <h4 class="mb-0 fw-bold text-primary">${catNome} <span class="badge bg-primary rounded-pill ms-2 fs-6">${ricetteCategoria.length}</span></h4>
-                        <span class="fs-5 text-muted">▼ Espandi/Comprimi</span>
+                        <span class="fs-5 text-muted">▼</span>
                     </div>
                     
                     <div class="collapse show mt-3" id="${catId}">
