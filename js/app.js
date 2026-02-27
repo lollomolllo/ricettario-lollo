@@ -42,39 +42,51 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // --- 2. LA FUNZIONE CHE ACCENDE LA NAVBAR E LA BOTTOM NAV (MOBILE) ---
 function inizializzaNavbar() {
+    // 1. Elementi Navbar Desktop
     const navElenco = document.getElementById('nav-elenco');
     const navCalendario = document.getElementById('nav-calendario');
     const navSpesa = document.getElementById('nav-spesa');
     const navImpostazioni = document.getElementById('nav-impostazioni');
     const navLogout = document.getElementById('nav-logout');
 
+    // 2. Elementi Bottom Nav Mobile
     const botElenco = document.getElementById('bot-nav-elenco');
     const botCalendario = document.getElementById('bot-nav-calendario');
     const botSpesa = document.getElementById('bot-nav-spesa');
     const botImpostazioni = document.getElementById('bot-nav-impostazioni');
 
+    // Funzione che gestisce i colori dei bottoni premuti
     function setActiveNav(tag) {
         document.querySelectorAll('.nav-link, .bottom-nav-item').forEach(el => el.classList.remove('active'));
+
         if (tag === 'elenco') { if (navElenco) navElenco.classList.add('active'); if (botElenco) botElenco.classList.add('active'); }
         if (tag === 'calendario') { if (navCalendario) navCalendario.classList.add('active'); if (botCalendario) botCalendario.classList.add('active'); }
         if (tag === 'spesa') { if (navSpesa) navSpesa.classList.add('active'); if (botSpesa) botSpesa.classList.add('active'); }
         if (tag === 'impostazioni') { if (navImpostazioni) navImpostazioni.classList.add('active'); if (botImpostazioni) botImpostazioni.classList.add('active'); }
     }
 
+    // Funzione universale che esegue il cambio pagina e lo scroll
     const gestisciClick = (e, tag, renderFunc, initFunc) => {
-        if (e) e.preventDefault(); setActiveNav(tag); renderFunc(); if (initFunc) initFunc();
+        if (e) e.preventDefault();
+        setActiveNav(tag);
+        renderFunc();
+        if (initFunc) initFunc();
+        window.scrollTo(0, 0); // Riporta lo schermo in cima automaticamente
     };
 
+    // 3. ASCOLTATORI CLICK NAVBAR (PC)
     if (navElenco) navElenco.addEventListener('click', (e) => gestisciClick(e, 'elenco', UI.renderElenco, initElenco));
     if (navCalendario) navCalendario.addEventListener('click', (e) => gestisciClick(e, 'calendario', UI.renderCalendario, initCalendario));
     if (navSpesa) navSpesa.addEventListener('click', (e) => gestisciClick(e, 'spesa', UI.renderSpesa, initSpesa));
     if (navImpostazioni) navImpostazioni.addEventListener('click', (e) => gestisciClick(e, 'impostazioni', UI.renderImpostazioni, initImpostazioni));
 
+    // 4. ASCOLTATORI CLICK BOTTOM NAV (MOBILE)
     if (botElenco) botElenco.addEventListener('click', (e) => gestisciClick(e, 'elenco', UI.renderElenco, initElenco));
     if (botCalendario) botCalendario.addEventListener('click', (e) => gestisciClick(e, 'calendario', UI.renderCalendario, initCalendario));
     if (botSpesa) botSpesa.addEventListener('click', (e) => gestisciClick(e, 'spesa', UI.renderSpesa, initSpesa));
     if (botImpostazioni) botImpostazioni.addEventListener('click', (e) => gestisciClick(e, 'impostazioni', UI.renderImpostazioni, initImpostazioni));
 
+    // 5. LOGOUT
     if (navLogout) { navLogout.addEventListener('click', async (e) => { e.preventDefault(); await API.logout(); window.location.reload(); }); }
 }
 
