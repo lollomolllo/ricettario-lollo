@@ -1,9 +1,12 @@
+/* ==========================================
+   1. STILI PER LA STAMPA (PDF)
+   ========================================== */
 @media print {
 
-    /* 1. Pulizia interfaccia */
     .navbar,
     .d-print-none,
-    .btn-apri-sottoricetta {
+    .btn-apri-sottoricetta,
+    #bottom-nav {
         display: none !important;
     }
 
@@ -21,7 +24,6 @@
         border: none !important;
     }
 
-    /* 2. Ottimizzazione Input Numerico */
     #input-ricalcolo {
         border: none !important;
         background: transparent !important;
@@ -36,40 +38,28 @@
         position: static !important;
     }
 
-    /* ==========================================
-       3. INVERSIONE ORDINE E LAYOUT COLONNE
-       ========================================== */
     .row.align-items-start {
         display: flex !important;
         flex-direction: column !important;
-        /* Mette gli elementi uno sotto l'altro */
     }
 
-    /* Colonna Ingredienti: la portiamo in CIMA (order: 1) */
     .row.align-items-start>.col-lg-4 {
         order: 1 !important;
         width: 100% !important;
         margin-bottom: 30px !important;
     }
 
-    /* Colonna Procedimento: la portiamo SOTTO (order: 2) */
     .row.align-items-start>.col-lg-8 {
         order: 2 !important;
         width: 100% !important;
     }
 
-    /* ==========================================
-       4. GESTIONE SALTI DI PAGINA INTELLIGENTI
-       ========================================== */
-
-    /* PERMETTIAMO alle card e ai contenitori di spezzarsi a metà pagina se sono lunghi */
     .card,
     .card-body {
         page-break-inside: auto !important;
         break-inside: auto !important;
     }
 
-    /* EVITIAMO di spezzare a metà il singolo ingrediente o il singolo step */
     li,
     .d-flex.mb-3,
     .alert {
@@ -77,7 +67,6 @@
         break-inside: avoid !important;
     }
 
-    /* EVITIAMO che un titolo rimanga da solo in fondo alla pagina */
     h1,
     h2,
     h3,
@@ -91,7 +80,7 @@
 }
 
 /* ==========================================
-   MODALITÀ CUCINA (Mani in Pasta)
+   2. MODALITÀ CUCINA (Mani in Pasta)
    ========================================== */
 #cooking-mode-overlay {
     position: fixed;
@@ -100,7 +89,6 @@
     width: 100vw;
     height: 100vh;
     background-color: #121212;
-    /* Sfondo scuro assoluto */
     color: #f8f9fa;
     z-index: 9999;
     display: flex;
@@ -121,54 +109,43 @@
     display: flex;
     flex: 1;
     overflow: hidden;
-    /* Blocca lo scroll generale */
 }
 
-/* Colonna di sinistra: Ingredienti fissi */
 .cooking-ingredients {
     width: 35%;
     padding: 2rem;
     background-color: #1e1e1e;
     overflow-y: auto;
-    /* Scroll indipendente */
     border-right: 2px solid #333;
 }
 
-/* Colonna di destra: Procedimento scorrevole */
 .cooking-steps {
     width: 65%;
     padding: 2rem 4rem;
     overflow-y: auto;
-    /* Scroll indipendente */
     scroll-behavior: smooth;
 }
 
-/* La singola "Card" dello step */
 .cooking-step-card {
     background-color: #2c2c2c;
     border-radius: 12px;
     padding: 2rem;
     margin-bottom: 2rem;
     font-size: 1.6rem;
-    /* Testo gigante */
     line-height: 1.6;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
     border-left: 6px solid #ffc107;
-    /* Bordo giallo per visibilità */
     cursor: pointer;
     user-select: none;
     transition: all 0.3s ease;
 }
 
-/* Quando tocchi uno step fatto, si scurisce e si barra */
 .cooking-step-card.fatto {
     opacity: 0.3;
     text-decoration: line-through;
     border-left-color: #198754;
-    /* Diventa verde */
 }
 
-/* Responsive: se lo guardi da un telefono in verticale */
 @media (max-width: 768px) {
     .cooking-body {
         flex-direction: column;
@@ -195,56 +172,61 @@
 }
 
 /* ==========================================
-   TEMA "BOUTIQUE PASTICCERIA"
+   3. TEMA BOUTIQUE PASTICCERIA (FORZATO)
    ========================================== */
-
 :root {
-    /* 1. Il nuovo font di sistema */
     --bs-font-sans-serif: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-
-    /* 2. Colori - Modalità Chiara */
-    --bs-primary: #C5832B;
-    /* Color Caramello / Oro Scuro */
-    --bs-primary-rgb: 197, 131, 43;
     --bs-body-bg: #FCFBF9;
-    /* Sfondo Panna/Perla leggerissimo */
-    --bs-dark: #2B1D14;
-    /* Cioccolato Fondente per i testi/navbar */
-
-    /* 3. Arrotondamento più morbido e moderno */
-    --bs-border-radius: 0.85rem;
-    --bs-border-radius-lg: 1.2rem;
-    --bs-border-radius-sm: 0.5rem;
 }
 
-/* --- STILE ELEMENTI (Bottoni e Card) --- */
+/* Forziamo il colore Caramello/Oro su tutti gli elementi primary di Bootstrap */
+.bg-primary {
+    background-color: #C5832B !important;
+    color: white !important;
+}
 
-/* Bottoni: Niente bordi duri, ombre morbide e animazione al passaggio del mouse */
+.text-primary {
+    color: #C5832B !important;
+}
+
+.border-primary {
+    border-color: #C5832B !important;
+}
+
+.btn-primary {
+    background-color: #C5832B !important;
+    border-color: #C5832B !important;
+    color: white !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: #A66C20 !important;
+    border-color: #A66C20 !important;
+}
+
+.btn-outline-primary {
+    background-color: transparent !important;
+    border: 2px solid #C5832B !important;
+    color: #C5832B !important;
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+    background-color: #C5832B !important;
+    color: white !important;
+}
+
+/* Bottoni morbidi */
 .btn {
     font-weight: 600;
     letter-spacing: 0.3px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    border: none !important;
-    padding: 0.6rem 1.2rem;
+    border-radius: 0.5rem;
 }
 
 .btn:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 8px 15px rgba(197, 131, 43, 0.2);
-    /* Ombra dorata */
-}
-
-/* Adattamento bottoni Outline (Solo contorno) */
-.btn-outline-primary {
-    background-color: transparent;
-    border: 2px solid var(--bs-primary) !important;
-    color: var(--bs-primary);
-}
-
-.btn-outline-primary:hover:not(:disabled) {
-    background-color: var(--bs-primary);
-    color: white;
 }
 
 /* Card che fluttuano elegantemente */
@@ -252,30 +234,27 @@
     border: none !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 1rem;
 }
 
-/* Animazione speciale solo per le card della galleria */
 .ricetta-card:hover {
     transform: translateY(-5px) !important;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08) !important;
 }
 
-/* Badge più eleganti */
 .badge {
     font-weight: 600;
     padding: 0.55em 0.85em;
     letter-spacing: 0.5px;
+    border-radius: 0.5rem;
 }
 
 /* ==========================================
-   TEMA SCURO (DARK MODE "MIDNIGHT CHOCOLATE")
+   4. TEMA SCURO ("MIDNIGHT CHOCOLATE")
    ========================================== */
-
 [data-bs-theme="dark"] body {
     background-color: #1A1614 !important;
-    /* Antracite con punta di marrone */
     color: #E8E6E3 !important;
-    /* Bianco sporco caldo */
 }
 
 [data-bs-theme="dark"] .bg-light,
@@ -283,7 +262,6 @@
 [data-bs-theme="dark"] .card,
 [data-bs-theme="dark"] .list-group-item {
     background-color: #241F1C !important;
-    /* Grigio caldo per le card */
     border-color: #38312D !important;
     color: #E8E6E3 !important;
 }
@@ -298,7 +276,6 @@
     border-color: #38312D !important;
 }
 
-/* Modifica agli input in Dark Mode */
 [data-bs-theme="dark"] .form-control,
 [data-bs-theme="dark"] .form-select,
 [data-bs-theme="dark"] .input-group-text {
@@ -310,28 +287,30 @@
 [data-bs-theme="dark"] .form-control:focus,
 [data-bs-theme="dark"] .form-select:focus {
     background-color: #241F1C !important;
-    border-color: var(--bs-primary) !important;
+    border-color: #C5832B !important;
     box-shadow: 0 0 0 0.25rem rgba(197, 131, 43, 0.25) !important;
     color: #fff !important;
 }
 
 /* ==========================================
-   OTTIMIZZAZIONI MOBILE (App Style)
+   5. OTTIMIZZAZIONI MOBILE (App Style)
    ========================================== */
+/* Di default (su PC) la bottom nav deve sparire */
+#bottom-nav {
+    display: none !important;
+}
+
 @media (max-width: 767px) {
 
-    /* 1. Nascondiamo il menu a tendina classico su mobile */
     .navbar-toggler,
     #navbarNav {
         display: none !important;
     }
 
-    /* 2. Diamo spazio in fondo alla pagina per non coprire i contenuti con la bottom bar */
     body {
         padding-bottom: 85px !important;
     }
 
-    /* 3. Stile Bottom Navigation Bar */
     #bottom-nav {
         display: flex !important;
         position: fixed;
@@ -339,16 +318,15 @@
         left: 0;
         width: 100%;
         background-color: var(--bs-body-bg);
-        border-top: 1px solid var(--bs-border-color);
+        border-top: 1px solid #dee2e6;
         z-index: 1050;
         justify-content: space-around;
         padding: 10px 0 15px 0;
     }
 
-    /* Adattamento al Tema Scuro */
     [data-bs-theme="dark"] #bottom-nav {
-        background-color: #212529;
-        border-top-color: #495057;
+        background-color: #1A1614;
+        border-top-color: #38312D;
     }
 
     .bottom-nav-item {
@@ -356,18 +334,17 @@
         flex-direction: column;
         align-items: center;
         text-decoration: none;
-        color: var(--bs-secondary);
+        color: #6c757d;
         font-size: 0.75rem;
         font-weight: bold;
         transition: color 0.2s;
     }
 
     .bottom-nav-item.active {
-        color: var(--bs-primary);
+        color: #C5832B;
         transform: scale(1.1);
     }
 
-    /* 4. Ingrandiamo i pulsanti in alto (Salva/Elimina/Importa) a tutto schermo */
     #titolo-inserimento+div {
         flex-direction: column;
         width: 100%;
@@ -379,7 +356,6 @@
         margin-bottom: 8px;
     }
 
-    /* 5. Griglia Calendario scrollabile orizzontalmente col dito */
     .calendario-table-wrapper {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
@@ -388,11 +364,5 @@
 
     .calendario-table-wrapper table {
         min-width: 700px;
-        /* Forza la tabella a rimanere larga */
     }
-}
-
-/* Di default (su PC) la bottom nav deve sparire */
-#bottom-nav {
-    display: none !important;
 }
