@@ -166,6 +166,7 @@ async function initInserimento() {
 
     // --- MAGIA: GESTIONE AUTOMATICA DELLE UNITÀ DI MISURA ---
     document.getElementById('container-ingredienti').addEventListener('change', (e) => {
+        // 1. Logica quando selezioni un INGREDIENTE
         if (e.target.classList.contains('ing-nome')) {
             const nomeScelto = e.target.value;
             const selectUnita = e.target.closest('.riga-ingrediente').querySelector('.ing-unita');
@@ -178,6 +179,49 @@ async function initInserimento() {
                 unitaAmmesse.forEach((u, index) => {
                     selectUnita.innerHTML += `<option value="${u}" ${index === 0 ? 'selected' : ''}>${u}</option>`;
                 });
+                // Forza l'aggiornamento per far scattare il controllo "q.b."
+                selectUnita.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+
+        // 2. Logica magica quando l'UNITÀ DI MISURA è "q.b."
+        if (e.target.classList.contains('ing-unita')) {
+            const riga = e.target.closest('.riga-ingrediente');
+            const qtaInput = riga.querySelector('.ing-qta');
+            const stepperGroup = riga.querySelector('.stepper-group');
+
+            if (e.target.value === 'q.b.') {
+                stepperGroup.classList.add('d-none'); // Nasconde il campo quantità
+                qtaInput.removeAttribute('required'); // Non è più obbligatorio
+                qtaInput.value = ''; // Lo svuota
+            } else {
+                stepperGroup.classList.remove('d-none'); // Lo fa riapparire
+                qtaInput.setAttribute('required', 'required'); // Torna obbligatorio
+            }
+        }
+    });
+
+    // --- GESTIONE CLICK SUI BOTTONI (Elimina, Sposta Su, Sposta Giù) ---
+    document.getElementById('form-ricetta').addEventListener('click', (e) => {
+        // Elimina Riga
+        if (e.target.classList.contains('btn-remove-row')) {
+            e.target.closest('.row').remove();
+            aggiornaNumeriStep();
+        }
+        // Sposta Su
+        if (e.target.classList.contains('btn-move-up')) {
+            const row = e.target.closest('.row');
+            if (row.previousElementSibling) {
+                row.parentNode.insertBefore(row, row.previousElementSibling);
+                aggiornaNumeriStep(); // Aggiorna i numeri in automatico!
+            }
+        }
+        // Sposta Giù
+        if (e.target.classList.contains('btn-move-down')) {
+            const row = e.target.closest('.row');
+            if (row.nextElementSibling) {
+                row.parentNode.insertBefore(row.nextElementSibling, row);
+                aggiornaNumeriStep(); // Aggiorna i numeri in automatico!
             }
         }
     });
@@ -294,8 +338,16 @@ async function initInserimento() {
                     prima.ingredientiData.forEach(ing => {
                         document.getElementById('btn-add-ingrediente').click();
                         const riga = document.getElementById('container-ingredienti').lastElementChild;
-                        riga.querySelector('.ing-nome').value = ing.nome; riga.querySelector('.ing-nome').dispatchEvent(new Event('change', { bubbles: true }));
-                        riga.querySelector('.ing-qta').value = ing.qta; riga.querySelector('.ing-unita').value = ing.unita;
+
+                        riga.querySelector('.ing-nome').value = ing.nome;
+                        riga.querySelector('.ing-nome').dispatchEvent(new Event('change', { bubbles: true }));
+
+                        riga.querySelector('.ing-unita').value = ing.unita;
+                        riga.querySelector('.ing-unita').dispatchEvent(new Event('change', { bubbles: true })); // Fa scattare il controllo q.b.
+
+                        if (ing.unita !== 'q.b.') {
+                            riga.querySelector('.ing-qta').value = ing.qta;
+                        }
                     });
 
                     prima.procedimentoData.forEach(step => {
@@ -579,10 +631,15 @@ async function apriDettaglioRicetta(id_ricetta) {
                         document.getElementById('btn-add-ingrediente').click();
                         const riga = document.getElementById('container-ingredienti').lastElementChild;
                         riga.querySelector('.ing-nome').value = ing.nome_ingrediente || ing.nome;
-                        // Simula il click per far aggiornare le unità di misura!
                         riga.querySelector('.ing-nome').dispatchEvent(new Event('change', { bubbles: true }));
-                        riga.querySelector('.ing-qta').value = ing.quantita || ing.qta;
-                        riga.querySelector('.ing-unita').value = ing.unita_distinta || ing.unita_misura || ing.unita || '';
+
+                        const unitaSalvata = ing.unita_distinta || ing.unita_misura || ing.unita || '';
+                        riga.querySelector('.ing-unita').value = unitaSalvata;
+                        riga.querySelector('.ing-unita').dispatchEvent(new Event('change', { bubbles: true })); // Fa scattare il controllo q.b.
+
+                        if (unitaSalvata !== 'q.b.') {
+                            riga.querySelector('.ing-qta').value = ing.quantita || ing.qta;
+                        }
                     });
                 }
 

@@ -509,33 +509,33 @@ const UI = {
                 <div class="col-md-3 mb-2 mb-md-0">
                     <div class="stepper-group shadow-sm">
                         <button type="button" class="stepper-btn px-2" tabindex="-1" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">−</button>
-                        <input type="number" step="0.1" class="form-control stepper-input ing-qta px-0" required>
+                        <input type="number" step="0.1" class="form-control stepper-input ing-qta px-0" placeholder="Q.tà" required>
                         <button type="button" class="stepper-btn px-2" tabindex="-1" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">+</button>
                     </div>
                 </div>
-                <div class="col-md-3 mb-2 mb-md-0">
+                <div class="col-md-2 mb-2 mb-md-0">
                     <select class="form-select ing-unita text-muted bg-light" required>
                         <option value="">-- Unità --</option>
                     </select>
                 </div>
-                <div class="col-md-1 text-end">
-                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row" tabindex="-1">✖</button>
+                <div class="col-md-2 text-end d-flex justify-content-end gap-1">
+                    <button type="button" class="btn btn-outline-secondary btn-sm btn-move-up" tabindex="-1" title="Sposta su">↑</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm btn-move-down" tabindex="-1" title="Sposta giù">↓</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row" tabindex="-1" title="Elimina">✖</button>
                 </div>
             </div>
         `;
     },
 
-
-
     getSottoricettaRowHTML: function (opzioniRicetteHtml = '<option value="">Caricamento...</option>') {
         return `
             <div class="row mb-2 riga-sottoricetta align-items-center mt-2">
-                <div class="col-md-7 mb-2 mb-md-0">
+                <div class="col-md-5 mb-2 mb-md-0">
                     <select class="form-select sr-nome" required>
                         ${opzioniRicetteHtml}
                     </select>
                 </div>
-                <div class="col-md-4 mb-2 mb-md-0">
+                <div class="col-md-5 mb-2 mb-md-0">
                     <div class="stepper-group shadow-sm">
                         <span class="bg-light text-muted small px-2 border-end d-flex align-items-center">Moltiplicatore</span>
                         <button type="button" class="stepper-btn px-2" tabindex="-1" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">−</button>
@@ -543,8 +543,10 @@ const UI = {
                         <button type="button" class="stepper-btn px-2" tabindex="-1" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">+</button>
                     </div>
                 </div>
-                <div class="col-md-1 text-end">
-                    <button type="button" class="btn btn-outline-danger btn-remove-row" tabindex="-1">✖</button>
+                <div class="col-md-2 text-end d-flex justify-content-end gap-1">
+                    <button type="button" class="btn btn-outline-secondary btn-sm btn-move-up" tabindex="-1" title="Sposta su">↑</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm btn-move-down" tabindex="-1" title="Sposta giù">↓</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row" tabindex="-1" title="Elimina">✖</button>
                 </div>
             </div>
         `;
@@ -554,10 +556,14 @@ const UI = {
         return `
             <div class="row mb-2 riga-step align-items-start mt-3">
                 <div class="col-md-1 text-center bg-light border rounded py-2 fw-bold step-number">#</div>
-                <div class="col-md-10">
+                <div class="col-md-9">
                     <textarea class="form-control step-desc" rows="1" style="overflow-y: hidden; resize: none;" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px';" required></textarea>
                 </div>
-                <div class="col-md-1 text-end"><button type="button" class="btn btn-outline-danger btn-remove-row" tabindex="-1">X</button></div>
+                <div class="col-md-2 text-end d-flex justify-content-end gap-1">
+                    <button type="button" class="btn btn-outline-secondary btn-sm btn-move-up" tabindex="-1" title="Sposta su">↑</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm btn-move-down" tabindex="-1" title="Sposta giù">↓</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row" tabindex="-1" title="Elimina">✖</button>
+                </div>
             </div>
         `;
     },
