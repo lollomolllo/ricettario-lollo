@@ -266,7 +266,7 @@ const UI = {
                             <div class="mb-4">
                                 <label class="form-label fw-bold text-primary">Le tue categorie</label>
                                 <div class="input-group shadow-sm mb-2">
-                                    <input type="text" id="input-categoria" class="form-control" placeholder="Es. Torte, Lievitati...">
+                                    <input type="text" id="input-categoria" class="form-control">
                                     <button class="btn btn-primary fw-bold" id="btn-add-categoria">Aggiungi</button>
                                 </div>
                                 <ul class="list-group shadow-sm" id="lista-categorie" style="max-height: 180px; overflow-y: auto;">
@@ -277,7 +277,7 @@ const UI = {
                             <div class="mb-3">
                                 <label class="form-label fw-bold text-secondary">I tuoi tag</label>
                                 <div class="input-group shadow-sm mb-2">
-                                    <input type="text" id="input-tag" class="form-control" placeholder="Es. Senza Lattosio, Veloce...">
+                                    <input type="text" id="input-tag" class="form-control">
                                     <button class="btn btn-secondary fw-bold text-white" id="btn-add-tag">Aggiungi</button>
                                 </div>
                                 <ul class="list-group shadow-sm" id="lista-tag" style="max-height: 180px; overflow-y: auto;">
@@ -742,7 +742,7 @@ const UI = {
                             <label class="form-label small fw-bold text-muted">Porzioni da preparare:</label>
                             <div class="stepper-group mb-3 shadow-sm">
                                 <button type="button" class="stepper-btn" tabindex="-1" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">−</button>
-                                <input type="number" step="0.1" class="form-control stepper-input" id="spesa-input-porzioni" placeholder="Es. 4">
+                                <input type="number" step="0.1" class="form-control stepper-input" id="spesa-input-porzioni">
                                 <button type="button" class="stepper-btn" tabindex="-1" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">+</button>
                             </div>
                             
