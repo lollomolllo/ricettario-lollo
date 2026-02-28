@@ -213,7 +213,7 @@ async function initInserimento() {
             const row = e.target.closest('.row');
             if (row.previousElementSibling) {
                 row.parentNode.insertBefore(row, row.previousElementSibling);
-                aggiornaNumeriStep(); // Aggiorna i numeri in automatico!
+                aggiornaNumeriStep(); // Aggiorna i numeri 1, 2, 3...
             }
         }
         // Sposta Giù
@@ -221,7 +221,7 @@ async function initInserimento() {
             const row = e.target.closest('.row');
             if (row.nextElementSibling) {
                 row.parentNode.insertBefore(row.nextElementSibling, row);
-                aggiornaNumeriStep(); // Aggiorna i numeri in automatico!
+                aggiornaNumeriStep(); // Aggiorna i numeri 1, 2, 3...
             }
         }
     });
