@@ -442,8 +442,10 @@ const UI = {
                                 <div class="col-md-4">Nome ingrediente</div><div class="col-md-4 text-center">Quantità</div><div class="col-md-3">Unità di misura</div>
                             </div>
                             <div id="container-ingredienti"></div>
-                            <button type="button" class="btn btn-sm btn-outline-success mt-3 fw-bold shadow-sm" id="btn-add-ingrediente">➕ Aggiungi ingrediente</button>
-                        </div>
+<div class="d-flex gap-2 mt-3">
+    <button type="button" class="btn btn-sm btn-outline-success fw-bold shadow-sm" id="btn-add-ingrediente">➕ Aggiungi ingrediente</button>
+    <button type="button" class="btn btn-sm btn-outline-info fw-bold shadow-sm" id="btn-add-sezione-ing">🗂️ Aggiungi Sezione</button>
+</div>                        </div>
                     </div>
                 </div>
 
@@ -517,6 +519,21 @@ const UI = {
                     <select class="form-select ing-unita text-muted bg-light" required>
                         <option value="">-- Unità --</option>
                     </select>
+                </div>
+                <div class="col-md-2 text-end d-flex justify-content-end gap-1">
+                    <button type="button" class="btn btn-outline-secondary btn-sm btn-move-up" tabindex="-1" title="Sposta su">↑</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm btn-move-down" tabindex="-1" title="Sposta giù">↓</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row" tabindex="-1" title="Elimina">✖</button>
+                </div>
+            </div>
+        `;
+    },
+
+    getSezioneRowHTML: function () {
+        return `
+            <div class="row align-items-center mb-2 riga-sezione-ing mt-3">
+                <div class="col-md-10 mb-2 mb-md-0">
+                    <input type="text" class="form-control fw-bold bg-light text-primary titolo-sezione border-info" placeholder="Es. Per la Base Sacher..." required>
                 </div>
                 <div class="col-md-2 text-end d-flex justify-content-end gap-1">
                     <button type="button" class="btn btn-outline-secondary btn-sm btn-move-up" tabindex="-1" title="Sposta su">↑</button>

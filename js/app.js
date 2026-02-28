@@ -155,6 +155,10 @@ async function initInserimento() {
         document.getElementById('container-ingredienti').insertAdjacentHTML('beforeend', UI.getIngredienteRowHTML(opzioniIngredientiHTML));
     });
 
+    document.getElementById('btn-add-sezione-ing').addEventListener('click', () => {
+        document.getElementById('container-ingredienti').insertAdjacentHTML('beforeend', UI.getSezioneRowHTML());
+    });
+
     document.getElementById('btn-add-step').addEventListener('click', () => {
         document.getElementById('container-procedimento').insertAdjacentHTML('beforeend', UI.getStepRowHTML());
         aggiornaNumeriStep();
@@ -413,9 +417,19 @@ async function initInserimento() {
 
             const tagsSpuntati = Array.from(document.querySelectorAll('.checkbox-tag:checked')).map(cb => cb.value);
 
-            const ingredientiData = Array.from(document.querySelectorAll('.riga-ingrediente')).map(r => ({
-                nome: r.querySelector('.ing-nome').value.trim(), qta: parseFloat(r.querySelector('.ing-qta').value), unita: r.querySelector('.ing-unita').value.trim()
-            })).filter(i => i.nome !== "");
+            // Sostituisci l'estrazione degli ingredienti con questa:
+            const ingredientiData = Array.from(document.getElementById('container-ingredienti').children).map(r => {
+                if (r.classList.contains('riga-sezione-ing')) {
+                    const val = r.querySelector('.titolo-sezione').value.trim();
+                    return { nome: `--- ${val} ---`, qta: 0, unita: 'SEZIONE' };
+                } else if (r.classList.contains('riga-ingrediente')) {
+                    return {
+                        nome: r.querySelector('.ing-nome').value.trim(),
+                        qta: parseFloat(r.querySelector('.ing-qta').value),
+                        unita: r.querySelector('.ing-unita').value.trim()
+                    };
+                }
+            }).filter(i => i && i.nome !== "");
 
             const procedimentoData = Array.from(document.querySelectorAll('.riga-step')).map(r => ({ desc: r.querySelector('.step-desc').value.trim() })).filter(s => s.desc !== "");
 
@@ -553,8 +567,12 @@ async function apriDettaglioRicetta(id_ricetta) {
 
         function ricalcolaBOM() {
             const rapporto = (parseFloat(inputRicalcolo.value) || 0) / ricetta.porzioni_base;
-            listIng.innerHTML = ricetta.ingredienti.map(ing => `<li class="list-group-item d-flex justify-content-between align-items-center">${ing.nome_ingrediente}<span class="badge bg-dark rounded-pill fs-6">${Number((ing.quantita * rapporto).toFixed(2))} ${ing.unita_distinta}</span></li>`).join('') || '<li class="list-group-item">Nessun ingrediente</li>';
-
+            listIng.innerHTML = ricetta.ingredienti.map(ing => {
+                if (ing.unita_distinta === 'SEZIONE') {
+                    return `<li class="list-group-item bg-light text-primary fw-bold mt-2 border-top border-primary border-2" style="font-size: 0.95rem; text-transform: uppercase;">🗂️ ${ing.nome_ingrediente.replace(/---/g, '').trim()}</li>`;
+                }
+                return `<li class="list-group-item d-flex justify-content-between align-items-center">${ing.nome_ingrediente}<span class="badge bg-dark rounded-pill fs-6">${Number((ing.quantita * rapporto).toFixed(2))} ${ing.unita_distinta}</span></li>`;
+            }).join('') || '<li class="list-group-item">Nessun ingrediente</li>';
             let htmlSr = '';
             if (ricetta.sottoricette_esplose?.length > 0) {
                 htmlSr += `<h5 class="fw-bold mb-3 mt-4 border-top pt-3">Sottoricette Incluse</h5>`;
@@ -642,17 +660,24 @@ async function apriDettaglioRicetta(id_ricetta) {
                 // 2. PRECOMPILA INGREDIENTI
                 if (ricetta.ingredienti) {
                     ricetta.ingredienti.forEach(ing => {
-                        document.getElementById('btn-add-ingrediente').click();
-                        const riga = document.getElementById('container-ingredienti').lastElementChild;
-                        riga.querySelector('.ing-nome').value = ing.nome_ingrediente || ing.nome;
-                        riga.querySelector('.ing-nome').dispatchEvent(new Event('change', { bubbles: true }));
-
                         const unitaSalvata = ing.unita_distinta || ing.unita_misura || ing.unita || '';
-                        riga.querySelector('.ing-unita').value = unitaSalvata;
-                        riga.querySelector('.ing-unita').dispatchEvent(new Event('change', { bubbles: true })); // Fa scattare il controllo q.b.
 
-                        if (unitaSalvata !== 'q.b.') {
-                            riga.querySelector('.ing-qta').value = ing.quantita || ing.qta;
+                        if (unitaSalvata === 'SEZIONE') {
+                            document.getElementById('btn-add-sezione-ing').click();
+                            const riga = document.getElementById('container-ingredienti').lastElementChild;
+                            riga.querySelector('.titolo-sezione').value = (ing.nome_ingrediente || ing.nome).replace(/---/g, '').trim();
+                        } else {
+                            document.getElementById('btn-add-ingrediente').click();
+                            const riga = document.getElementById('container-ingredienti').lastElementChild;
+                            riga.querySelector('.ing-nome').value = ing.nome_ingrediente || ing.nome;
+                            riga.querySelector('.ing-nome').dispatchEvent(new Event('change', { bubbles: true }));
+
+                            riga.querySelector('.ing-unita').value = unitaSalvata;
+                            riga.querySelector('.ing-unita').dispatchEvent(new Event('change', { bubbles: true }));
+
+                            if (unitaSalvata !== 'q.b.') {
+                                riga.querySelector('.ing-qta').value = ing.quantita || ing.qta;
+                            }
                         }
                     });
                 }
@@ -694,8 +719,13 @@ let wakeLockCucina = null;
 async function avviaModalitaCucina(ricetta, rapportoPorzioni) {
     try { if ('wakeLock' in navigator) wakeLockCucina = await navigator.wakeLock.request('screen'); } catch (err) { }
     let htmlIngredienti = '<h3 class="mb-4 text-warning fw-bold">Ingredienti</h3><ul class="list-group list-group-flush fs-5">';
-    ricetta.ingredienti.forEach(ing => { htmlIngredienti += `<li class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between align-items-center ps-0 pe-0">${ing.nome_ingrediente} <strong class="text-warning">${Number((ing.quantita * rapportoPorzioni).toFixed(2))} ${ing.unita_distinta}</strong></li>`; });
-    if (ricetta.sottoricette_esplose?.length > 0) {
+    ricetta.ingredienti.forEach(ing => {
+        if (ing.unita_distinta === 'SEZIONE') {
+            htmlIngredienti += `<h5 class="mt-4 mb-2 text-info fw-bold border-bottom border-secondary pb-1">🗂️ ${ing.nome_ingrediente.replace(/---/g, '').trim()}</h5>`;
+        } else {
+            htmlIngredienti += `<li class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between align-items-center ps-0 pe-0">${ing.nome_ingrediente} <strong class="text-warning">${Number((ing.quantita * rapportoPorzioni).toFixed(2))} ${ing.unita_distinta}</strong></li>`;
+        }
+    }); if (ricetta.sottoricette_esplose?.length > 0) {
         ricetta.sottoricette_esplose.forEach(sr => {
             htmlIngredienti += `<h5 class="mt-4 mb-2 text-info fw-bold">↳ ${sr.ricetta_figlia.nome}</h5>`;
             sr.ricetta_figlia.ingredienti.forEach(subIng => htmlIngredienti += `<li class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between align-items-center ps-0 pe-0">${subIng.nome_ingrediente} <strong class="text-info">${Number((subIng.quantita * (rapportoPorzioni * sr.moltiplicatore)).toFixed(2))} ${subIng.unita_distinta}</strong></li>`);
@@ -993,14 +1023,21 @@ async function initSpesa() {
                 ingredientiEstratti.push({ nome: ing.nome_ingrediente, unita: ing.unita_distinta, qta: ing.quantita * rapporto });
             });
 
-            if (ricetta.sottoricette_esplose && ricetta.sottoricette_esplose.length > 0) {
-                ricetta.sottoricette_esplose.forEach(sr => {
-                    const rFiglia = sr.ricetta_figlia;
-                    const moltiplicatoreReale = parseFloat(sr.moltiplicatore) || 1;
-                    const rapportoSotto = rapporto * moltiplicatoreReale;
-
-                    rFiglia.ingredienti.forEach(subIng => {
-                        ingredientiEstratti.push({ nome: subIng.nome_ingrediente, unita: subIng.unita_distinta, qta: subIng.quantita * rapportoSotto });
+            if (ric.ingredienti) {
+                ric.ingredienti.forEach(ing => {
+                    if (ing.unita_distinta === 'SEZIONE') return; // <-- SALTA LE SEZIONI
+                    const key = `${ing.nome_ingrediente}|${ing.unita_distinta}`;
+                    ingredientiTotali[key] = (ingredientiTotali[key] || 0) + (ing.quantita * rapporto);
+                });
+            }
+            if (ric.sottoricette_esplose) {
+                ric.sottoricette_esplose.forEach(sr => {
+                    if (!sr.ricetta_figlia || !sr.ricetta_figlia.ingredienti) return;
+                    const rapSr = rapporto * (sr.moltiplicatore || 1);
+                    sr.ricetta_figlia.ingredienti.forEach(si => {
+                        if (si.unita_distinta === 'SEZIONE') return; // <-- SALTA LE SEZIONI
+                        const key = `${si.nome_ingrediente}|${si.unita_distinta}`;
+                        ingredientiTotali[key] = (ingredientiTotali[key] || 0) + (si.quantita * rapSr);
                     });
                 });
             }
