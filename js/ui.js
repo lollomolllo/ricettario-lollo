@@ -671,7 +671,7 @@ const UI = {
                             <label class="form-label fw-bold">Porzioni da produrre (${ricetta.unita_porzioni}):</label>
                             <div class="stepper-group mb-4 shadow-sm" style="height: 55px;">
                                 <button type="button" class="stepper-btn fs-3 px-4" tabindex="-1" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">−</button>
-                                <input type="number" step="1" class="form-control stepper-input text-primary fs-4" id="input-ricalcolo" value="${ricetta.porzioni_base}">
+                                <input type="number" step="0.5" class="form-control stepper-input text-primary fs-4" id="input-ricalcolo" value="${ricetta.porzioni_base}">
                                 <button type="button" class="stepper-btn fs-3 px-4" tabindex="-1" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">+</button>
                             </div>
 
