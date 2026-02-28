@@ -176,36 +176,44 @@ async function loadDizionari() {
     UI.renderListaTag(await API.getTags());
 }
 // ==========================================
-// 5. INSERIMENTO E MODIFICA RICETTA
+// 2. INSERIMENTO E MODIFICA (Form)
 // ==========================================
 async function initInserimento() {
-    let categorieDB = [], tagsDB = [], ricetteDB = [];
+    let categorieDB = [];
+    let tagsDB = [];
+    let ricetteDB = [];
 
-    // INIETTIAMO I DIZIONARI INVISIBILI (Ora c'è anche "dizionario-ricette")
+    // INIETTIAMO I DATALIST INVISIBILI NEL BODY
     if (!document.getElementById('dizionario-ingredienti')) {
-        document.body.insertAdjacentHTML('beforeend', `<datalist id="dizionario-ingredienti"></datalist><datalist id="dizionario-unita"></datalist><datalist id="dizionario-ricette"></datalist>`);
+        document.body.insertAdjacentHTML('beforeend', `
+            <datalist id="dizionario-ingredienti"></datalist>
+            <datalist id="dizionario-unita"></datalist>
+            <datalist id="dizionario-ricette"></datalist>
+        `);
     }
 
     try {
-        const [categorie, tags, ricette, dizionario] = await Promise.all([API.getCategorie(), API.getTags(), API.getRicetteElencoBreve(), API.getDizionarioIngredienti()]);
+        const [categorie, tags, ricette, dizionario] = await Promise.all([
+            API.getCategorie(), API.getTags(), API.getRicetteElencoBreve(), API.getDizionarioIngredienti()
+        ]);
         categorieDB = categorie; tagsDB = tags; ricetteDB = ricette;
 
-        // Compiliamo i suggerimenti
         document.getElementById('dizionario-ingredienti').innerHTML = dizionario.nomi.map(n => `<option value="${n}">`).join('');
         document.getElementById('dizionario-unita').innerHTML = dizionario.unita.map(u => `<option value="${u}">`).join('');
-        document.getElementById('dizionario-ricette').innerHTML = ricette.map(r => `<option value="${r.nome}">`).join(''); // <-- Suggeritore Sottoricette!
+        document.getElementById('dizionario-ricette').innerHTML = ricette.map(r => `<option value="${r.nome}">`).join('');
 
         const selectCat = document.getElementById('ricetta-categoria');
         categorie.forEach(c => selectCat.innerHTML += `<option value="${c.id}">${c.nome}</option>`);
 
-        document.getElementById('container-tags').innerHTML = tags.map(t => `<div class="form-check form-check-inline"><input class="form-check-input checkbox-tag" type="checkbox" value="${t.id}" id="tag-${t.id}"><label class="form-check-label" for="tag-${t.id}">${t.nome}</label></div>`).join('') || '<span class="text-muted small">Nessun tag.</span>';
-    } catch (e) { console.error("Errore dizionari:", e); }
+        const containerTags = document.getElementById('container-tags');
+        containerTags.innerHTML = tags.map(t => `<div class="form-check form-check-inline"><input class="form-check-input checkbox-tag" type="checkbox" value="${t.id}" id="tag-${t.id}"><label class="form-check-label" for="tag-${t.id}">${t.nome}</label></div>`).join('') || '<span class="text-muted small">Nessun tag.</span>';
 
-    document.getElementById('btn-add-ingrediente').addEventListener('click', () => document.getElementById('container-ingredienti').insertAdjacentHTML('beforeend', UI.getIngredienteRowHTML()));
+    } catch (e) { console.error("Errore caricamento dizionari:", e); }
+
+    // --- LOGICA PULSANTI AGGIUNTA RIGHE DINAMICHE ---
+    document.getElementById('btn-add-ingrediente').addEventListener('click', () => { document.getElementById('container-ingredienti').insertAdjacentHTML('beforeend', UI.getIngredienteRowHTML()); });
     document.getElementById('btn-add-step').addEventListener('click', () => { document.getElementById('container-procedimento').insertAdjacentHTML('beforeend', UI.getStepRowHTML()); aggiornaNumeriStep(); });
-
-    // Agganciato il nuovo HTML pulito senza select
-    document.getElementById('btn-add-sottoricetta').addEventListener('click', () => document.getElementById('container-sottoricette').insertAdjacentHTML('beforeend', UI.getSottoricettaRowHTML()));
+    document.getElementById('btn-add-sottoricetta').addEventListener('click', () => { document.getElementById('container-sottoricette').insertAdjacentHTML('beforeend', UI.getSottoricettaRowHTML()); });
 
     document.getElementById('form-ricetta').addEventListener('click', (e) => {
         if (e.target.classList.contains('btn-remove-row')) { e.target.closest('.row').remove(); aggiornaNumeriStep(); }
@@ -215,26 +223,38 @@ async function initInserimento() {
         document.getElementById('btn-add-ingrediente').click(); document.getElementById('btn-add-step').click();
     }
 
-    // Importazione TXT
+    // ==========================================
+    // LOGICA DI IMPORTAZIONE TXT ANTIPROIETTILE
+    // ==========================================
     const btnImport = document.getElementById('btn-import-txt');
     const inputImport = document.getElementById('input-import-txt');
+
     if (btnImport && inputImport) {
         const nuovoBtnImport = btnImport.cloneNode(true);
         btnImport.parentNode.replaceChild(nuovoBtnImport, btnImport);
+
         nuovoBtnImport.addEventListener('click', (e) => { e.preventDefault(); inputImport.click(); });
 
         inputImport.addEventListener('change', async (e) => {
-            const file = e.target.files[0]; if (!file) return;
+            const file = e.target.files[0];
+            if (!file) return;
+
             const reader = new FileReader();
             reader.onload = async (event) => {
                 const testo = event.target.result;
                 const blocchi = testo.split('=== RICETTA ===').map(b => b.trim()).filter(b => b !== '');
+
                 if (blocchi.length === 0) { alert("Nessuna ricetta trovata."); return; }
 
-                const sceltaSalvataggio = confirm(`Trovate ${blocchi.length} ricette.\nVuoi SALVARE DIRETTAMENTE nel DB?\nPremi ANNULLA per l'anteprima.`);
+                const sceltaSalvataggio = confirm(`Ho trovato ${blocchi.length} ricette nel file.\n\nVuoi SALVARE DIRETTAMENTE nel database (premendo OK)?\n\nPremi ANNULLA per caricare l'anteprima nel form.`);
+
                 let ricetteProcessate = [];
                 for (let blocco of blocchi) {
-                    const estraiCampo = (chiave) => { const match = blocco.match(new RegExp(`${chiave}:\\s*(.*)`, 'i')); return match ? match[1].trim() : ''; };
+                    const estraiCampo = (chiave) => {
+                        const match = blocco.match(new RegExp(`${chiave}:\\s*(.*)`, 'i'));
+                        return match ? match[1].trim() : '';
+                    };
+
                     const estraiSezione = (titolo) => {
                         const parti = blocco.split(new RegExp(`--- ${titolo} ---`, 'i'));
                         if (parti.length < 2) return '';
@@ -245,46 +265,64 @@ async function initInserimento() {
                     };
 
                     const nome = estraiCampo('NOME'); if (!nome) continue;
+
                     let id_categoria = null;
                     const catNome = estraiCampo('CATEGORIA');
-                    if (catNome) { const cTrov = categorieDB.find(c => c.nome.toLowerCase() === catNome.toLowerCase()); if (cTrov) id_categoria = cTrov.id; }
+                    if (catNome) { const catTrovata = categorieDB.find(c => c.nome.toLowerCase() === catNome.toLowerCase()); if (catTrovata) id_categoria = catTrovata.id; }
 
                     let tagsSpuntati = [];
                     const tagsString = estraiCampo('TAGS');
                     if (tagsString) {
                         tagsString.split(',').map(t => t.trim().toLowerCase()).forEach(nt => {
-                            const tTrov = tagsDB.find(t => t.nome.toLowerCase() === nt); if (tTrov) tagsSpuntati.push(tTrov.id);
+                            const tTrovato = tagsDB.find(t => t.nome.toLowerCase() === nt); if (tTrovato) tagsSpuntati.push(tTrovato.id);
                         });
                     }
 
                     const ricettaData = {
-                        nome, id_categoria, porzioni_base: parseFloat(estraiCampo('PORZIONI').replace(',', '.')) || 1,
-                        unita_porzioni: estraiCampo('UNITA') || 'pz', tempo_riposo_ore: parseFloat(estraiCampo('RIPOSO \\(ore\\)').replace(',', '.')) || 0,
-                        tempo_cottura_min: parseInt(estraiCampo('COTTURA \\(min\\)')) || 0, fonte: '', link_fonte: '', note: estraiCampo('NOTE'), url_immagine: null
+                        nome: nome, id_categoria: id_categoria,
+                        porzioni_base: parseFloat(estraiCampo('PORZIONI').replace(',', '.')) || 1,
+                        unita_porzioni: estraiCampo('UNITA') || 'pz',
+                        tempo_riposo_ore: parseFloat(estraiCampo('RIPOSO \\(ore\\)').replace(',', '.')) || 0,
+                        tempo_cottura_min: parseInt(estraiCampo('COTTURA \\(min\\)')) || 0,
+                        fonte: estraiCampo('FONTE'), link_fonte: estraiCampo('LINK'), note: estraiCampo('NOTE'),
+                        url_immagine: estraiCampo('IMMAGINE') || null // Legge il link dal TXT
                     };
 
                     const ingredientiData = [];
-                    const bIng = estraiSezione('INGREDIENTI');
-                    if (bIng) bIng.split('\n').forEach(l => {
-                        let r = l.trim().replace(/^[\-\*\•]\s*/, '');
-                        if (r.includes('|')) { const p = r.split('|').map(x => x.trim()); if (p.length >= 2) ingredientiData.push({ nome: p[0], qta: parseFloat(p[1].replace(',', '.')) || 0, unita: p[2] || '' }); }
-                    });
+                    const bloccoIng = estraiSezione('INGREDIENTI');
+                    if (bloccoIng) {
+                        bloccoIng.split('\n').forEach(linea => {
+                            let l = linea.trim().replace(/^[\-\*\•]\s*/, '');
+                            if (l.includes('|')) {
+                                const parti = l.split('|').map(p => p.trim());
+                                if (parti.length >= 2) ingredientiData.push({ nome: parti[0], qta: parseFloat(parti[1].replace(',', '.')) || 0, unita: parti[2] || '' });
+                            }
+                        });
+                    }
 
                     const procedimentoData = [];
-                    const bProc = estraiSezione('PROCEDIMENTO');
-                    if (bProc) bProc.split('\n').forEach(l => {
-                        let r = l.trim(); if (r !== '') { r = r.replace(/^\d+[\.\-\)]\s*/, ''); procedimentoData.push({ desc: r }); }
-                    });
+                    const bloccoProc = estraiSezione('PROCEDIMENTO');
+                    if (bloccoProc) {
+                        bloccoProc.split('\n').forEach(linea => {
+                            let l = linea.trim();
+                            if (l !== '') { l = l.replace(/^\d+[\.\-\)]\s*/, ''); procedimentoData.push({ desc: l }); }
+                        });
+                    }
 
                     const sottoricetteData = [];
-                    const bSr = estraiSezione('SOTTORICETTE');
-                    if (bSr) bSr.split('\n').forEach(l => {
-                        let r = l.trim().replace(/^[\-\*\•]\s*/, '');
-                        if (r.includes('|')) {
-                            const p = r.split('|').map(x => x.trim());
-                            if (p.length >= 2) { const rt = ricetteDB.find(x => x.nome.toLowerCase() === p[0].toLowerCase()); if (rt) sottoricetteData.push({ id_figlia: rt.id, moltiplicatore: parseFloat(p[1].replace(',', '.')) || 1 }); }
-                        }
-                    });
+                    const bloccoSr = estraiSezione('SOTTORICETTE');
+                    if (bloccoSr) {
+                        bloccoSr.split('\n').forEach(linea => {
+                            let l = linea.trim().replace(/^[\-\*\•]\s*/, '');
+                            if (l.includes('|')) {
+                                const parti = l.split('|').map(p => p.trim());
+                                if (parti.length >= 2) {
+                                    const ricTrovata = ricetteDB.find(r => r.nome.toLowerCase() === parti[0].toLowerCase());
+                                    if (ricTrovata) sottoricetteData.push({ id_figlia: ricTrovata.id, moltiplicatore: parseFloat(parti[1].replace(',', '.')) || 1 });
+                                }
+                            }
+                        });
+                    }
 
                     ricetteProcessate.push({ ricettaData, ingredientiData, procedimentoData, tagsSpuntati, sottoricetteData });
                 }
@@ -292,35 +330,72 @@ async function initInserimento() {
                 if (ricetteProcessate.length === 0) return;
 
                 if (sceltaSalvataggio) {
-                    nuovoBtnImport.disabled = true; nuovoBtnImport.textContent = "Salvataggio...";
+                    nuovoBtnImport.disabled = true; nuovoBtnImport.textContent = "Download immagini e Salvataggio...";
                     try {
-                        for (let r of ricetteProcessate) await API.salvaRicettaCompleta(r.ricettaData, r.ingredientiData, r.procedimentoData, r.tagsSpuntati, r.sottoricetteData);
-                        alert(`Importate ${ricetteProcessate.length} ricette.`); document.getElementById('nav-elenco').click();
-                    } catch (err) { alert("Errore: " + err.message); } finally { nuovoBtnImport.disabled = false; nuovoBtnImport.innerHTML = "📄 Importa"; }
+                        for (let r of ricetteProcessate) {
+                            // SCARICA E CARICA IMMAGINE IN CLOUD
+                            if (r.ricettaData.url_immagine && r.ricettaData.url_immagine.startsWith('http')) {
+                                try {
+                                    const resp = await fetch(r.ricettaData.url_immagine);
+                                    const blob = await resp.blob();
+                                    const file = new File([blob], `img_importata_${Date.now()}.jpg`, { type: blob.type });
+                                    r.ricettaData.url_immagine = await API.uploadImmagine(file);
+                                } catch (e) {
+                                    console.warn("Immagine protetta dal sito sorgente. Uso il link diretto.");
+                                    // Lascia il link web originale, che verrà comunque mostrato!
+                                }
+                            }
+                            await API.salvaRicettaCompleta(r.ricettaData, r.ingredientiData, r.procedimentoData, r.tagsSpuntati, r.sottoricetteData);
+                        }
+                        alert(`Successo! Importate direttamente ${ricetteProcessate.length} ricette.`);
+                        document.getElementById('nav-elenco').click();
+                    } catch (err) { alert("Errore salvataggio: " + err.message); }
+                    finally { nuovoBtnImport.disabled = false; nuovoBtnImport.innerHTML = "📄 Importa da TXT"; }
                 } else {
-                    const pr = ricetteProcessate[0];
-                    document.getElementById('ricetta-nome').value = pr.ricettaData.nome;
-                    if (pr.ricettaData.id_categoria) document.getElementById('ricetta-categoria').value = pr.ricettaData.id_categoria;
-                    document.getElementById('ricetta-porzioni').value = pr.ricettaData.porzioni_base; document.getElementById('ricetta-unita').value = pr.ricettaData.unita_porzioni;
-                    document.getElementById('ricetta-riposo').value = pr.ricettaData.tempo_riposo_ore; document.getElementById('ricetta-cottura').value = pr.ricettaData.tempo_cottura_min;
-                    document.getElementById('ricetta-note').value = pr.ricettaData.note; document.getElementById('ricetta-fonte').value = ''; document.getElementById('ricetta-link').value = '';
+                    const prima = ricetteProcessate[0];
+                    if (blocchi.length > 1) alert("Attenzione: avendo scelto l'anteprima, verrà pre-compilata SOLO la prima ricetta del file.");
+
+                    document.getElementById('ricetta-nome').value = prima.ricettaData.nome;
+                    if (prima.ricettaData.id_categoria) document.getElementById('ricetta-categoria').value = prima.ricettaData.id_categoria;
+                    document.getElementById('ricetta-porzioni').value = prima.ricettaData.porzioni_base;
+                    document.getElementById('ricetta-unita').value = prima.ricettaData.unita_porzioni;
+                    document.getElementById('ricetta-riposo').value = prima.ricettaData.tempo_riposo_ore;
+                    document.getElementById('ricetta-cottura').value = prima.ricettaData.tempo_cottura_min;
+                    document.getElementById('ricetta-note').value = prima.ricettaData.note;
+                    document.getElementById('ricetta-fonte').value = prima.ricettaData.fonte || '';
+                    document.getElementById('ricetta-link').value = prima.ricettaData.link_fonte || '';
+
+                    // PARTE FONDAMENTALE: Teniamo in memoria il link dell'immagine per quando preme Salva!
+                    urlImmagineInModifica = prima.ricettaData.url_immagine;
 
                     document.querySelectorAll('.checkbox-tag').forEach(chk => chk.checked = false);
-                    pr.tagsSpuntati.forEach(tid => { const cb = document.getElementById(`tag-${tid}`); if (cb) cb.checked = true; });
+                    prima.tagsSpuntati.forEach(tagId => { const cb = document.getElementById(`tag-${tagId}`); if (cb) cb.checked = true; });
 
-                    document.getElementById('container-ingredienti').innerHTML = ''; document.getElementById('container-procedimento').innerHTML = ''; document.getElementById('container-sottoricette').innerHTML = '';
+                    document.getElementById('container-ingredienti').innerHTML = '';
+                    document.getElementById('container-procedimento').innerHTML = '';
+                    document.getElementById('container-sottoricette').innerHTML = '';
 
-                    pr.ingredientiData.forEach(ing => { document.getElementById('btn-add-ingrediente').click(); const r = document.getElementById('container-ingredienti').lastElementChild; r.querySelector('.ing-nome').value = ing.nome; r.querySelector('.ing-qta').value = ing.qta; r.querySelector('.ing-unita').value = ing.unita; });
-                    pr.procedimentoData.forEach(step => { document.getElementById('btn-add-step').click(); const r = document.getElementById('container-procedimento').lastElementChild; const t = r.querySelector('.step-desc'); t.value = step.desc; setTimeout(() => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }, 10); });
-
-                    // PRECOMPILAZIONE SOTTORICETTE MODIFICATA (Trova il nome dall'ID)
-                    pr.sottoricetteData.forEach(sr => {
-                        document.getElementById('btn-add-sottoricetta').click();
-                        const r = document.getElementById('container-sottoricette').lastElementChild;
-                        const ricTrovata = ricetteDB.find(x => x.id === sr.id_figlia);
-                        r.querySelector('.sr-nome').value = ricTrovata ? ricTrovata.nome : '';
-                        r.querySelector('.sr-moltiplicatore').value = sr.moltiplicatore;
+                    prima.ingredientiData.forEach(ing => {
+                        document.getElementById('btn-add-ingrediente').click();
+                        const riga = document.getElementById('container-ingredienti').lastElementChild;
+                        riga.querySelector('.ing-nome').value = ing.nome; riga.querySelector('.ing-qta').value = ing.qta; riga.querySelector('.ing-unita').value = ing.unita;
                     });
+
+                    prima.procedimentoData.forEach(step => {
+                        document.getElementById('btn-add-step').click();
+                        const riga = document.getElementById('container-procedimento').lastElementChild;
+                        const txtArea = riga.querySelector('.step-desc'); txtArea.value = step.desc;
+                        setTimeout(() => { txtArea.style.height = 'auto'; txtArea.style.height = txtArea.scrollHeight + 'px'; }, 10);
+                    });
+
+                    prima.sottoricetteData.forEach(sr => {
+                        document.getElementById('btn-add-sottoricetta').click();
+                        const riga = document.getElementById('container-sottoricette').lastElementChild;
+                        const ricTrovata = ricetteDB.find(x => x.id === sr.id_figlia);
+                        riga.querySelector('.sr-nome').value = ricTrovata ? ricTrovata.nome : '';
+                        riga.querySelector('.sr-moltiplicatore').value = sr.moltiplicatore;
+                    });
+
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             };
@@ -328,44 +403,80 @@ async function initInserimento() {
         });
     }
 
+    // ==========================================
+    // ELIMINAZIONE MANUALE
+    // ==========================================
     const btnEliminaForm = document.getElementById('btn-elimina-ricetta-form');
     if (btnEliminaForm) {
         const nuovoBtnElimina = btnEliminaForm.cloneNode(true);
         btnEliminaForm.parentNode.replaceChild(nuovoBtnElimina, btnEliminaForm);
         nuovoBtnElimina.addEventListener('click', async () => {
             if (!idRicettaInModifica) return;
-            if (!confirm("Sicuro di voler eliminare questa ricetta?")) return;
+            if (!confirm("Sei sicuro di voler eliminare definitivamente questa ricetta dal database?")) return;
             try {
-                nuovoBtnElimina.disabled = true; nuovoBtnElimina.innerHTML = "Eliminazione...";
+                nuovoBtnElimina.disabled = true; nuovoBtnElimina.innerHTML = "🗑 Eliminazione in corso...";
                 await API.deleteRicetta(idRicettaInModifica, urlImmagineInModifica);
-                alert("Eliminata!"); idRicettaInModifica = null; urlImmagineInModifica = null; document.getElementById('nav-elenco').click();
-            } catch (err) { alert("Errore: " + err.message); nuovoBtnElimina.disabled = false; nuovoBtnElimina.innerHTML = "🗑 Elimina"; }
+                alert("Ricetta eliminata con successo!");
+                idRicettaInModifica = null; urlImmagineInModifica = null; document.getElementById('nav-elenco').click();
+            } catch (err) { alert("Errore durante l'eliminazione: " + err.message); nuovoBtnElimina.disabled = false; nuovoBtnElimina.innerHTML = "🗑 Elimina"; }
         });
     }
 
+    // ==========================================
+    // SALVATAGGIO MANUALE DEL FORM
+    // ==========================================
     document.getElementById('form-ricetta').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btnSubmit = document.getElementById('btn-salva-ricetta-top');
-        btnSubmit.disabled = true; btnSubmit.textContent = "Salvataggio...";
+        btnSubmit.disabled = true; btnSubmit.textContent = "Salvataggio in corso...";
 
         try {
-            let url_immagine = idRicettaInModifica ? urlImmagineInModifica : null;
+            // Usa l'immagine importata (se c'è), oppure quella già presente in modifica
+            let url_immagine = urlImmagineInModifica;
+
             const fileInput = document.getElementById('ricetta-immagine');
-            if (fileInput.files.length > 0) url_immagine = await API.uploadImmagine(fileInput.files[0]);
+            if (fileInput.files.length > 0) {
+                // Se l'utente carica un file a mano dal suo PC, vince questo e sovrascrive il link
+                url_immagine = await API.uploadImmagine(fileInput.files[0]);
+            } else if (url_immagine && url_immagine.startsWith('http') && !url_immagine.includes('supabase.co')) {
+                // Se è un link web preso dall'importazione TXT, prova a salvarlo in cloud!
+                try {
+                    const resp = await fetch(url_immagine);
+                    const blob = await resp.blob();
+                    const file = new File([blob], `img_salvata_${Date.now()}.jpg`, { type: blob.type });
+                    url_immagine = await API.uploadImmagine(file);
+                } catch (e) {
+                    console.warn("Impossibile scaricare immagine da link, uso il link diretto.");
+                    // Mantiene url_immagine uguale al link originale
+                }
+            }
 
             const idCat = document.getElementById('ricetta-categoria').value;
             const ricettaData = {
-                nome: document.getElementById('ricetta-nome').value.trim(), id_categoria: idCat ? parseInt(idCat) : null,
-                porzioni_base: parseFloat(document.getElementById('ricetta-porzioni').value), unita_porzioni: document.getElementById('ricetta-unita').value.trim(),
-                tempo_riposo_ore: parseFloat(document.getElementById('ricetta-riposo').value) || 0, tempo_cottura_min: parseInt(document.getElementById('ricetta-cottura').value) || 0,
-                fonte: document.getElementById('ricetta-fonte')?.value.trim() || null, link_fonte: document.getElementById('ricetta-link')?.value.trim() || null, note: document.getElementById('ricetta-note')?.value.trim() || null, url_immagine
+                nome: document.getElementById('ricetta-nome').value.trim(),
+                id_categoria: idCat ? parseInt(idCat) : null,
+                porzioni_base: parseFloat(document.getElementById('ricetta-porzioni').value),
+                unita_porzioni: document.getElementById('ricetta-unita').value.trim(),
+                tempo_riposo_ore: parseFloat(document.getElementById('ricetta-riposo').value) || 0,
+                tempo_cottura_min: parseInt(document.getElementById('ricetta-cottura').value) || 0,
+                fonte: document.getElementById('ricetta-fonte')?.value.trim() || null,
+                link_fonte: document.getElementById('ricetta-link')?.value.trim() || null,
+                note: document.getElementById('ricetta-note')?.value.trim() || null,
+                url_immagine: url_immagine
             };
 
             const tagsSpuntati = Array.from(document.querySelectorAll('.checkbox-tag:checked')).map(cb => cb.value);
-            const ingredientiData = Array.from(document.querySelectorAll('.riga-ingrediente')).map(r => ({ nome: r.querySelector('.ing-nome').value.trim(), qta: parseFloat(r.querySelector('.ing-qta').value), unita: r.querySelector('.ing-unita').value.trim() })).filter(i => i.nome !== "");
-            const procedimentoData = Array.from(document.querySelectorAll('.riga-step')).map(r => ({ desc: r.querySelector('.step-desc').value.trim() })).filter(s => s.desc !== "");
 
-            // LA MAGIA: Cerca il nome della sottoricetta digitato e lo trasforma nel suo ID!
+            const ingredientiData = Array.from(document.querySelectorAll('.riga-ingrediente')).map(r => ({
+                nome: r.querySelector('.ing-nome').value.trim(),
+                qta: parseFloat(r.querySelector('.ing-qta').value),
+                unita: r.querySelector('.ing-unita').value.trim()
+            })).filter(i => i.nome !== "");
+
+            const procedimentoData = Array.from(document.querySelectorAll('.riga-step')).map(r => ({
+                desc: r.querySelector('.step-desc').value.trim()
+            })).filter(s => s.desc !== "");
+
             const sottoricetteData = Array.from(document.querySelectorAll('.riga-sottoricetta')).map(r => {
                 const nomeCercato = r.querySelector('.sr-nome').value.trim();
                 const ricTrovata = ricetteDB.find(x => x.nome.toLowerCase() === nomeCercato.toLowerCase());
@@ -375,11 +486,20 @@ async function initInserimento() {
                 };
             }).filter(sr => sr.id_figlia !== "" && !isNaN(sr.moltiplicatore));
 
-            if (idRicettaInModifica) { await API.aggiornaRicettaCompleta(idRicettaInModifica, ricettaData, ingredientiData, procedimentoData, tagsSpuntati, sottoricetteData); alert("Aggiornata!"); }
-            else { await API.salvaRicettaCompleta(ricettaData, ingredientiData, procedimentoData, tagsSpuntati, sottoricetteData); alert("Salvata!"); }
+            if (idRicettaInModifica) {
+                await API.aggiornaRicettaCompleta(idRicettaInModifica, ricettaData, ingredientiData, procedimentoData, tagsSpuntati, sottoricetteData);
+                alert("Ricetta aggiornata!");
+            } else {
+                await API.salvaRicettaCompleta(ricettaData, ingredientiData, procedimentoData, tagsSpuntati, sottoricetteData);
+                alert("Nuova ricetta salvata con l'immagine!");
+            }
 
             idRicettaInModifica = null; urlImmagineInModifica = null; document.getElementById('nav-elenco').click();
-        } catch (error) { alert("Errore: " + error.message); btnSubmit.disabled = false; btnSubmit.innerHTML = idRicettaInModifica ? "💾 Salva Modifiche" : "💾 Salva Ricetta"; }
+
+        } catch (error) {
+            console.error(error); alert("Errore: " + error.message);
+            btnSubmit.disabled = false; btnSubmit.innerHTML = idRicettaInModifica ? "💾 Salva Modifiche" : "💾 Salva Ricetta";
+        }
     });
 }
 
