@@ -5,14 +5,11 @@ const UI = {
 
     renderElenco: function () {
         this.container.innerHTML = `
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-                <h2 class="mb-0 fw-bold">📚 Galleria Ricette</h2>
-                <button class="btn btn-primary shadow-sm fw-bold w-100 w-md-auto py-3 py-md-2" id="btn-nuova-ricetta-elenco">
-                    ➕ Crea Nuova Ricetta
-                </button>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Elenco Ricette</h2>
             </div>
             
-            <div class="card mb-4 shadow-sm border-0 bg-white">
+            <div class="card mb-4 shadow-sm">
                 <div class="card-body row g-3 align-items-center">
                     <div class="col-md-3">
                         <input type="text" id="filtro-testo" class="form-control" placeholder="🔍 Cerca per nome...">
@@ -27,7 +24,7 @@ const UI = {
                             <option value="">Tutti i Tag</option>
                         </select>
                     </div>
-                    <div class="col-md-3 text-md-end text-center d-none d-md-block">
+                    <div class="col-md-3 text-end">
                         <div class="btn-group shadow-sm" role="group">
                             <button type="button" class="btn btn-outline-dark active" id="btn-view-grid" title="Vista a Card">
                                 <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M1 1h4v4H1V1zm5 0h4v4H6V1zm5 0h4v4h-4V1zM1 6h4v4H1V6zm5 0h4v4H6V6zm5 0h4v4h-4V6zM1 11h4v4H1v-4zm5 0h4v4H6v-4zm5 0h4v4h-4v-4z"/></svg>
@@ -46,7 +43,7 @@ const UI = {
         `;
     },
 
-    renderCards: function (ricette, viewMode = 'grid') {
+    renderCards: function (ricette, viewMode = 'grid', categorieAperte = []) {
         const griglia = document.getElementById('griglia-ricette');
         if (!griglia) return;
 
@@ -58,15 +55,15 @@ const UI = {
         // 1. RAGGRUPPIAMO LE RICETTE PER CATEGORIA
         const gruppi = {};
         ricette.forEach(r => {
-            const catNome = r.categorie ? r.categorie.nome : 'Senza Categoria';
+            const catNome = r.categorie ? r.categorie.nome : 'Senza categoria';
             if (!gruppi[catNome]) gruppi[catNome] = [];
             gruppi[catNome].push(r);
         });
 
-        // 2. ORDINIAMO LE CATEGORIE ALFABETICAMENTE ("Senza Categoria" va in fondo)
+        // 2. ORDINIAMO LE CATEGORIE ALFABETICAMENTE
         const categorieOrdinate = Object.keys(gruppi).sort((a, b) => {
-            if (a === 'Senza Categoria') return 1;
-            if (b === 'Senza Categoria') return -1;
+            if (a === 'Senza categoria') return 1;
+            if (b === 'Senza categoria') return -1;
             return a.localeCompare(b);
         });
 
@@ -77,6 +74,10 @@ const UI = {
             const ricetteCategoria = gruppi[catNome];
             const catId = 'collapse-cat-' + index;
 
+            // CONTROLLO FONDAMENTALE: Se la categoria è nell'elenco di quelle salvate, la classe è 'show', sennò vuoto (chiuso)
+            const isOpen = categorieAperte.includes(catNome) ? 'show' : '';
+
+            // Abbiamo aggiunto data-cat-nome="${catNome}" al div "collapse"
             html += `
                 <div class="col-12 mb-4">
                     <div class="d-flex justify-content-between align-items-center p-3 rounded shadow-sm border" 
@@ -86,36 +87,35 @@ const UI = {
                         <span class="fs-5 text-muted">▼</span>
                     </div>
                     
-                    <div class="collapse show mt-3" id="${catId}">
+                    <div class="collapse ${isOpen} mt-3" id="${catId}" data-cat-nome="${catNome}">
                         <div class="row g-3">
             `;
 
-            // 4. INSERIAMO LE RICETTE NEL LORO GRUPPO
+            // 4. INSERIAMO LE RICETTE
             ricetteCategoria.forEach(r => {
                 const imgUrl = r.url_immagine || 'https://via.placeholder.com/400x300?text=Nessuna+Immagine';
 
                 if (viewMode === 'list') {
-                    // Modalità Lista Compatta
                     html += `
-                        <div class="col-12">
+                        <div class="col-12 mb-2">
                             <div class="card shadow-sm ricetta-card flex-row align-items-center p-2" style="cursor: pointer; transition: background-color 0.2s;" data-id="${r.id}" onmouseover="this.classList.add('bg-light')" onmouseout="this.classList.remove('bg-light')">
                                 <img src="${imgUrl}" class="rounded shadow-sm" alt="${r.nome}" style="width: 80px; height: 80px; object-fit: cover; margin-right: 15px;">
                                 <div>
                                     <h5 class="mb-0 fw-bold text-dark">${r.nome}</h5>
-                                    ${r.ricette_tags.length > 0 ? `<div class="mt-1">${r.ricette_tags.map(rt => `<span class="badge bg-secondary me-1">${rt.tag.nome}</span>`).join('')}</div>` : ''}
+                                    <small class="text-muted">${catNome}</small>
                                 </div>
                             </div>
                         </div>
                     `;
                 } else {
-                    // Modalità Griglia (Card Classiche)
                     const tagsHTML = r.ricette_tags.map(rt => `<span class="badge bg-secondary me-1 mb-1">${rt.tag.nome}</span>`).join('');
                     html += `
-                        <div class="col-md-4 col-lg-3">
+                        <div class="col-md-4 mb-4">
                             <div class="card h-100 shadow-sm ricetta-card" style="cursor: pointer; transition: transform 0.2s;" data-id="${r.id}" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-                                <img src="${imgUrl}" class="card-img-top" alt="${r.nome}" style="height: 180px; object-fit: cover;">
-                                <div class="card-body d-flex flex-column p-3">
-                                    <h6 class="card-title fw-bold mb-2">${r.nome}</h6>
+                                <img src="${imgUrl}" class="card-img-top" alt="${r.nome}" style="height: 200px; object-fit: cover;">
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title fw-bold">${r.nome}</h5>
+                                    <h6 class="card-subtitle mb-3 text-muted">${catNome}</h6>
                                     <div class="mt-auto">${tagsHTML}</div>
                                 </div>
                             </div>
@@ -327,8 +327,9 @@ const UI = {
     renderDettaglio: function (ricetta) {
         const catNome = ricetta.categorie ? ricetta.categorie.nome : 'Senza categoria';
         const imgUrl = ricetta.url_immagine || 'https://via.placeholder.com/800x400?text=Nessuna+Immagine';
-        const tagsHTML = ricetta.ricette_tags.map(rt => `<span class="badge bg-secondary me-1 mb-1">${rt.tag.nome}</span>`).join('');
+        const tagsHTML = ricetta.ricette_tags.map(rt => `<span class="badge bg-secondary me-1">${rt.tag.nome}</span>`).join('');
 
+        // Costruiamo la lista degli Step del procedimento
         let stepHTML = '';
         ricetta.procedimento.forEach(step => {
             stepHTML += `
@@ -344,21 +345,27 @@ const UI = {
         });
 
         this.container.innerHTML = `
-            <div class="mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 d-print-none">
-                <button class="btn btn-outline-secondary btn-sm w-100 w-md-auto mb-2 mb-md-0 shadow-sm" id="btn-torna-elenco">
-                    ← Torna alla Galleria
-                </button>
-                <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-md-end action-buttons-mobile">
-                    <button class="btn btn-warning btn-sm shadow-sm fw-bold" id="btn-cucina-ricetta">🧑‍🍳 Cucina</button>
-                    <button class="btn btn-outline-success btn-sm shadow-sm" id="btn-stampa-ricetta">🖨️ Stampa</button>
-                    <button class="btn btn-outline-primary btn-sm shadow-sm" id="btn-modifica-ricetta" data-id="${ricetta.id}">✏️ Modifica</button>
-                    <button class="btn btn-outline-danger btn-sm shadow-sm" id="btn-elimina-ricetta" data-id="${ricetta.id}" data-img="${ricetta.url_immagine || ''}">🗑 Elimina</button>
+            <div class="mb-3 d-flex justify-content-between align-items-center d-print-none">
+                <button class="btn btn-outline-secondary btn-sm" id="btn-torna-elenco">← Torna alla Galleria</button>
+                <div>
+                    <button class="btn btn-warning btn-sm shadow-sm me-2 fw-bold" id="btn-cucina-ricetta">
+                        🧑‍🍳 Modalità Cucina
+                    </button>
+                    <button class="btn btn-outline-success btn-sm shadow-sm me-2" id="btn-stampa-ricetta">
+                        🖨️ Stampa / PDF
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm shadow-sm me-2" id="btn-modifica-ricetta" data-id="${ricetta.id}">
+                        ✏️ Modifica
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm shadow-sm" id="btn-elimina-ricetta" data-id="${ricetta.id}" data-img="${ricetta.url_immagine || ''}">
+                        🗑 Elimina
+                    </button>
                 </div>
             </div>
 
-            <div class="card shadow-sm border-0 mb-4 overflow-hidden">
+            <div class="card shadow-sm border-0 mb-4">
                 <img src="${imgUrl}" class="card-img-top" alt="${ricetta.nome}" style="max-height: 400px; object-fit: cover;">
-                <div class="card-body p-4">
+                <div class="card-body">
                     <h1 class="fw-bold display-5 mb-1">${ricetta.nome}</h1>
                     <h5 class="text-muted mb-3">${catNome}</h5>
                     <div class="mb-4">${tagsHTML}</div>
@@ -378,14 +385,14 @@ const UI = {
                         </div>
                     </div>
 
-                    ${ricetta.note ? `<div class="alert alert-info border-0 shadow-sm mb-0" style="white-space: pre-wrap;"><strong>Note:</strong><br>${ricetta.note}</div>` : ''}
-                </div>
+                    ${ricetta.note ? `<div class="alert alert-info border-0 shadow-sm mb-0" style="white-space: pre-wrap;"><strong>Note:</strong><br>${ricetta.note}</div>` : ''}                </div>
             </div>
 
             <div class="row align-items-start">
+                
                 <div class="col-lg-8 mb-4">
                     <div class="card shadow-sm border-0">
-                        <div class="card-body p-4">
+                        <div class="card-body">
                             <h3 class="fw-bold mb-4 border-bottom pb-2">Procedimento</h3>
                             ${stepHTML || '<p class="text-muted">Nessun procedimento inserito.</p>'}
                         </div>
@@ -394,17 +401,20 @@ const UI = {
 
                 <div class="col-lg-4 mb-4">
                     <div class="card shadow-sm border-primary sticky-top" style="top: 20px; z-index: 1;">
-                        <div class="card-header bg-primary text-white text-center py-3">
+                        <div class="card-header bg-primary text-white text-center">
                             <span class="fw-bold fs-5">INGREDIENTI</span>
                         </div>
-                        <div class="card-body bg-light p-4">
+                        <div class="card-body bg-light">
                             <label class="form-label fw-bold">Porzioni da produrre (${ricetta.unita_porzioni}):</label>
                             <div class="input-group input-group-lg mb-4 shadow-sm">
                                 <input type="number" step="0.1" class="form-control text-center fw-bold text-primary" id="input-ricalcolo" value="${ricetta.porzioni_base}">
                             </div>
 
-                            <ul class="list-group list-group-flush shadow-sm rounded" id="lista-ingredienti-ricalcolati"></ul>
-                            <div id="container-sottoricette-ricalcolate"></div>
+                            <ul class="list-group list-group-flush shadow-sm" id="lista-ingredienti-ricalcolati">
+                                </ul>
+                            
+                            <div id="container-sottoricette-ricalcolate">
+                                </div>
                         </div>
                     </div>
                 </div>
