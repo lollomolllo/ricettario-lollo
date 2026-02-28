@@ -101,6 +101,23 @@ async function initImpostazioni() {
     if (selectGrouped) selectGrouped.addEventListener('change', (e) => { prefs.defaultGrouped = (e.target.value === 'true'); savePrefs(prefs); });
     if (selectCalendarView) selectCalendarView.addEventListener('change', (e) => { prefs.defaultCalendarView = e.target.value; savePrefs(prefs); });
 
+    // APERTURA DEL MANUALE D'USO
+    const btnManuale = document.getElementById('btn-apri-manuale');
+    if (btnManuale) {
+        btnManuale.addEventListener('click', () => {
+            // Disegna il manuale
+            UI.renderManuale();
+            window.scrollTo(0, 0); // Riporta su la pagina
+
+            // Attiva il tasto "Torna Indietro" all'interno del manuale
+            document.getElementById('btn-chiudi-manuale').addEventListener('click', () => {
+                UI.renderImpostazioni();
+                initImpostazioni(); // Ri-inizializza il pannello impostazioni
+                window.scrollTo(0, 0);
+            });
+        });
+    }
+
     await loadDizionari();
 
     // INSERIMENTO CATEGORIE (Con controllo doppioni)

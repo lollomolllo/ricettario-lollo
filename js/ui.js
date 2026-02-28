@@ -213,6 +213,9 @@ const UI = {
         this.container.innerHTML = `
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 border-bottom pb-3">
                 <h2 class="mb-0 fw-bold">⚙️ Impostazioni sistema</h2>
+                <button class="btn btn-info shadow-sm fw-bold text-white mt-3 mt-md-0 px-4 py-2" id="btn-apri-manuale" style="background-color: #17a2b8; border: none;">
+                    📖 Leggi il Manuale d'Uso
+                </button>
             </div>
             
             <div class="row">
@@ -283,6 +286,70 @@ const UI = {
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        `;
+    },
+
+    renderManuale: function () {
+        this.container.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                <h2 class="mb-0 fw-bold text-primary">📖 Manuale d'uso</h2>
+                <button class="btn btn-outline-secondary shadow-sm fw-bold" id="btn-chiudi-manuale">← Torna alle Impostazioni</button>
+            </div>
+            
+            <div class="card shadow-sm border-0 mb-5">
+                <div class="card-body p-4 p-md-5" style="line-height: 1.8; font-size: 1.05rem;">
+                    <p class="fs-5 text-muted mb-5">Benvenuto nel tuo nuovo gestionale ricette in cloud. Questo strumento è stato progettato per semplificare e velocizzare il lavoro in laboratorio o in cucina, permettendoti di gestire distinte base complesse, calcolare proporzioni all'istante, pianificare la spesa con il tuo team e tenere traccia delle produzioni giornaliere.</p>
+
+                    <h4 class="fw-bold text-primary mt-4 border-bottom pb-2">1. 🧭 Navigazione e interfaccia</h4>
+                    <p>L'applicazione si adatta magicamente al dispositivo che stai usando:</p>
+                    <ul>
+                        <li><strong>Da Computer:</strong> Troverai un classico e comodo menu di navigazione in alto.</li>
+                        <li><strong>Da Smartphone:</strong> Troverai una pratica barra di navigazione fissata in basso da cui potrai scorrere tra le varie sezioni con il pollice.</li>
+                    </ul>
+
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">2. 📚 Galleria ricette</h4>
+                    <p>La schermata principale è la tua libreria. Sopra all'elenco troverai il bottone <strong>"➕ Crea nuova ricetta"</strong> e un potente motore di visualizzazione:</p>
+                    <ul>
+                        <li><strong>Filtri rapidi:</strong> Cerca scrivendo parte del nome, oppure usa le tendine per filtrare per categoria o tag.</li>
+                        <li><strong>Interruttore categorie:</strong> Accendilo per raggruppare le ricette in comodi "cassetti" divisi per categoria. Spegnilo per avere un elenco unico e continuo in perfetto ordine alfabetico.</li>
+                        <li><strong>Le 3 visualizzazioni:</strong> Griglia a card (ideale su PC), elenco con foto (perfetto su telefono), ed elenco compatto (per scorrere velocemente i titoli).</li>
+                    </ul>
+
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">3. ➕ Creare e modificare una ricetta</h4>
+                    <p>Il modulo di creazione è diviso in 4 pratici blocchi. <strong>Puoi cliccare sull'intestazione colorata di ogni blocco per chiuderlo o aprirlo.</strong> I campi obbligatori sono solo due: <em>Nome ricetta</em> e <em>Porzioni base</em>.</p>
+                    <ul>
+                        <li><strong>Dati generali:</strong> Inserisci nome, categoria, foto, riposo, cottura. Usa i tasti <strong>−</strong> e <strong>+</strong> per i numeri.</li>
+                        <li><strong>Ingredienti:</strong> Mentre digiti il nome, il sistema ti suggerirà le parole usate in passato.</li>
+                        <li><strong>Procedimento:</strong> L'area di testo si allarga da sola. I numeri degli step si aggiornano automaticamente.</li>
+                        <li><strong>Sottoricette (Distinte Base):</strong> Se usi una base già salvata (es. Crema), cercala nella barra intelligente e inserisci il <strong>Moltiplicatore</strong> (es. 0.5 per mezza dose).</li>
+                    </ul>
+
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">4. ⚖️ Ricalcolo istantaneo</h4>
+                    <p>Entrando in una ricetta, troverai il riquadro degli Ingredienti. Usa i tasti <strong>−</strong> e <strong>+</strong> nel campo <strong>"Porzioni da produrre"</strong>. Tutti gli ingredienti si aggiorneranno all'istante, inclusi quelli delle eventuali sottoricette che verranno "esplosi".</p>
+
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">5. 🧑‍🍳 Modalità cucina (mani in pasta)</h4>
+                    <p>Devi metterti a impastare? Premi il pulsante giallo <strong>"🧑‍🍳 Cucina"</strong>.</p>
+                    <ul>
+                        <li>Lo schermo diventerà nero e <strong>rimarrà sempre acceso</strong> (nessun blocco automatico dello schermo).</li>
+                        <li>A sinistra avrai la lista ingredienti (ricalcolati), a destra i passaggi in grande.</li>
+                        <li>Toccando un passaggio completato, verrà sbarrato per non farti perdere il segno.</li>
+                    </ul>
+
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">6. 🛒 La lista della spesa</h4>
+                    <p>La sezione Spesa è <strong>condivisa in tempo reale con tutto il team</strong>.</p>
+                    <ul>
+                        <li>Seleziona le ricette e le porzioni che vuoi produrre, poi premi "➕ Aggiungi".</li>
+                        <li>Il gestionale "esploderà" le ricette e <strong>sommerà tutti gli ingredienti uguali</strong>.</li>
+                        <li>Mentre fai la spesa, fai tap sulla spunta per barrare i prodotti messi nel carrello.</li>
+                    </ul>
+
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">7. 📅 Diario e calendario di produzione</h4>
+                    <p>Tieni traccia del lavoro quotidiano. Seleziona la ricetta, la data e le porzioni prodotte. La <strong>Dashboard</strong> ti dirà quante preparazioni hai fatto quest'anno e qual è la ricetta "Best Seller". Puoi visualizzare lo storico come Elenco o come Calendario a griglia.</p>
+
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">8. ⚙️ Setup e impostazioni</h4>
+                    <p>Personalizza il gestionale: scegli la visuale predefinita, attiva il tema scuro per rilassare gli occhi, e gestisci le categorie e i tag (il sistema bloccherà in automatico l'inserimento di eventuali doppioni!).</p>
                 </div>
             </div>
         `;
