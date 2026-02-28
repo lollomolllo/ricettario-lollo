@@ -301,6 +301,26 @@ const API = {
     },
 
     // ==========================================
+    // GESTIONE CLOUD DELLA SPESA
+    // ==========================================
+    getSpesa: async () => {
+        const { data, error } = await supabaseClient
+            .from('spesa_salvata')
+            .select('stato_json')
+            .eq('id', 1)
+            .single();
+        if (error) throw error;
+        return data ? data.stato_json : { ricetteInMenu: [], spunte: {} };
+    },
+
+    saveSpesa: async (statoSpesa) => {
+        const { error } = await supabaseClient
+            .from('spesa_salvata')
+            .upsert({ id: 1, stato_json: statoSpesa });
+        if (error) console.error("Errore salvataggio spesa in cloud:", error);
+    },
+
+    // ==========================================
     // AUTENTICAZIONE
     // ==========================================
     getSession: async () => {

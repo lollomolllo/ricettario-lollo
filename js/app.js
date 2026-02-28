@@ -6,7 +6,10 @@ let urlImmagineInModifica = null;
 
 const PREFS_KEY = 'erp_ricettario_prefs';
 
-function getPrefs() { return JSON.parse(localStorage.getItem(PREFS_KEY)) || { defaultView: 'grid', theme: 'light' }; }
+function getPrefs() {
+    return JSON.parse(localStorage.getItem(PREFS_KEY)) || { defaultView: 'grid', theme: 'light', defaultGrouped: true, defaultCalendarView: 'lista' };
+}
+
 function savePrefs(prefs) { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); }
 function applicaTema() { document.documentElement.setAttribute('data-bs-theme', getPrefs().theme); }
 
@@ -85,49 +88,107 @@ async function initImpostazioni() {
     const prefs = getPrefs();
     const selectView = document.getElementById('pref-view');
     const selectTheme = document.getElementById('pref-theme');
-    selectView.value = prefs.defaultView; selectTheme.value = prefs.theme;
+    const selectGrouped = document.getElementById('pref-grouped');
+    const selectCalendarView = document.getElementById('pref-calendar-view');
 
-    selectView.addEventListener('change', (e) => { prefs.defaultView = e.target.value; savePrefs(prefs); });
-    selectTheme.addEventListener('change', (e) => { prefs.theme = e.target.value; savePrefs(prefs); applicaTema(); });
+    if (selectView) selectView.value = prefs.defaultView || 'grid';
+    if (selectTheme) selectTheme.value = prefs.theme || 'light';
+    if (selectGrouped) selectGrouped.value = prefs.defaultGrouped !== false ? 'true' : 'false';
+    if (selectCalendarView) selectCalendarView.value = prefs.defaultCalendarView || 'lista';
+
+    if (selectView) selectView.addEventListener('change', (e) => { prefs.defaultView = e.target.value; savePrefs(prefs); });
+    if (selectTheme) selectTheme.addEventListener('change', (e) => { prefs.theme = e.target.value; savePrefs(prefs); applicaTema(); });
+    if (selectGrouped) selectGrouped.addEventListener('change', (e) => { prefs.defaultGrouped = (e.target.value === 'true'); savePrefs(prefs); });
+    if (selectCalendarView) selectCalendarView.addEventListener('change', (e) => { prefs.defaultCalendarView = e.target.value; savePrefs(prefs); });
 
     await loadDizionari();
-    document.getElementById('btn-add-categoria').addEventListener('click', async () => { const val = document.getElementById('input-categoria').value.trim(); if (val) { await API.addCategoria(val); document.getElementById('input-categoria').value = ''; await loadDizionari(); } });
-    document.getElementById('btn-add-tag').addEventListener('click', async () => { const val = document.getElementById('input-tag').value.trim(); if (val) { await API.addTag(val); document.getElementById('input-tag').value = ''; await loadDizionari(); } });
-    document.getElementById('lista-categorie').addEventListener('click', async (e) => { if (e.target.classList.contains('btn-delete-categoria') && confirm('Sicuro?')) { await API.deleteCategoria(e.target.getAttribute('data-id')); await loadDizionari(); } });
-    document.getElementById('lista-tag').addEventListener('click', async (e) => { if (e.target.classList.contains('btn-delete-tag') && confirm('Sicuro?')) { await API.deleteTag(e.target.getAttribute('data-id')); await loadDizionari(); } });
+
+    // INSERIMENTO CATEGORIE (Con controllo doppioni)
+    document.getElementById('btn-add-categoria').addEventListener('click', async () => {
+        const val = document.getElementById('input-categoria').value.trim();
+        if (val) {
+            const categorieEsistenti = await API.getCategorie();
+            const giaPresente = categorieEsistenti.some(c => c.nome.toLowerCase() === val.toLowerCase());
+
+            if (giaPresente) {
+                alert("⚠️ Attenzione: Questa categoria esiste già!");
+                return; // Blocca tutto e non salva
+            }
+
+            await API.addCategoria(val);
+            document.getElementById('input-categoria').value = '';
+            await loadDizionari();
+        }
+    });
+
+    // INSERIMENTO TAG (Con controllo doppioni)
+    document.getElementById('btn-add-tag').addEventListener('click', async () => {
+        const val = document.getElementById('input-tag').value.trim();
+        if (val) {
+            const tagsEsistenti = await API.getTags();
+            const giaPresente = tagsEsistenti.some(t => t.nome.toLowerCase() === val.toLowerCase());
+
+            if (giaPresente) {
+                alert("⚠️ Attenzione: Questo tag esiste già!");
+                return; // Blocca tutto e non salva
+            }
+
+            await API.addTag(val);
+            document.getElementById('input-tag').value = '';
+            await loadDizionari();
+        }
+    });
+
+    // ELIMINAZIONE
+    document.getElementById('lista-categorie').addEventListener('click', async (e) => {
+        if (e.target.classList.contains('btn-delete-categoria') && confirm('Vuoi eliminare questa categoria?')) {
+            await API.deleteCategoria(e.target.getAttribute('data-id'));
+            await loadDizionari();
+        }
+    });
+    document.getElementById('lista-tag').addEventListener('click', async (e) => {
+        if (e.target.classList.contains('btn-delete-tag') && confirm('Vuoi eliminare questo tag?')) {
+            await API.deleteTag(e.target.getAttribute('data-id'));
+            await loadDizionari();
+        }
+    });
 }
 
 async function loadDizionari() {
     UI.renderListaCategorie(await API.getCategorie());
     UI.renderListaTag(await API.getTags());
 }
-
-// --- 5. INSERIMENTO E MODIFICA RICETTA ---
+// ==========================================
+// 5. INSERIMENTO E MODIFICA RICETTA
+// ==========================================
 async function initInserimento() {
-    let opzioniRicetteHTML = '<option value="">Seleziona ricetta...</option>';
     let categorieDB = [], tagsDB = [], ricetteDB = [];
 
+    // INIETTIAMO I DIZIONARI INVISIBILI (Ora c'è anche "dizionario-ricette")
     if (!document.getElementById('dizionario-ingredienti')) {
-        document.body.insertAdjacentHTML('beforeend', `<datalist id="dizionario-ingredienti"></datalist><datalist id="dizionario-unita"></datalist>`);
+        document.body.insertAdjacentHTML('beforeend', `<datalist id="dizionario-ingredienti"></datalist><datalist id="dizionario-unita"></datalist><datalist id="dizionario-ricette"></datalist>`);
     }
 
     try {
         const [categorie, tags, ricette, dizionario] = await Promise.all([API.getCategorie(), API.getTags(), API.getRicetteElencoBreve(), API.getDizionarioIngredienti()]);
         categorieDB = categorie; tagsDB = tags; ricetteDB = ricette;
 
+        // Compiliamo i suggerimenti
         document.getElementById('dizionario-ingredienti').innerHTML = dizionario.nomi.map(n => `<option value="${n}">`).join('');
         document.getElementById('dizionario-unita').innerHTML = dizionario.unita.map(u => `<option value="${u}">`).join('');
+        document.getElementById('dizionario-ricette').innerHTML = ricette.map(r => `<option value="${r.nome}">`).join(''); // <-- Suggeritore Sottoricette!
 
         const selectCat = document.getElementById('ricetta-categoria');
         categorie.forEach(c => selectCat.innerHTML += `<option value="${c.id}">${c.nome}</option>`);
 
         document.getElementById('container-tags').innerHTML = tags.map(t => `<div class="form-check form-check-inline"><input class="form-check-input checkbox-tag" type="checkbox" value="${t.id}" id="tag-${t.id}"><label class="form-check-label" for="tag-${t.id}">${t.nome}</label></div>`).join('') || '<span class="text-muted small">Nessun tag.</span>';
-        ricette.forEach(r => opzioniRicetteHTML += `<option value="${r.id}">${r.nome}</option>`);
     } catch (e) { console.error("Errore dizionari:", e); }
 
     document.getElementById('btn-add-ingrediente').addEventListener('click', () => document.getElementById('container-ingredienti').insertAdjacentHTML('beforeend', UI.getIngredienteRowHTML()));
     document.getElementById('btn-add-step').addEventListener('click', () => { document.getElementById('container-procedimento').insertAdjacentHTML('beforeend', UI.getStepRowHTML()); aggiornaNumeriStep(); });
-    document.getElementById('btn-add-sottoricetta').addEventListener('click', () => document.getElementById('container-sottoricette').insertAdjacentHTML('beforeend', UI.getSottoricettaRowHTML(opzioniRicetteHTML)));
+
+    // Agganciato il nuovo HTML pulito senza select
+    document.getElementById('btn-add-sottoricetta').addEventListener('click', () => document.getElementById('container-sottoricette').insertAdjacentHTML('beforeend', UI.getSottoricettaRowHTML()));
 
     document.getElementById('form-ricetta').addEventListener('click', (e) => {
         if (e.target.classList.contains('btn-remove-row')) { e.target.closest('.row').remove(); aggiornaNumeriStep(); }
@@ -234,7 +295,15 @@ async function initInserimento() {
 
                     pr.ingredientiData.forEach(ing => { document.getElementById('btn-add-ingrediente').click(); const r = document.getElementById('container-ingredienti').lastElementChild; r.querySelector('.ing-nome').value = ing.nome; r.querySelector('.ing-qta').value = ing.qta; r.querySelector('.ing-unita').value = ing.unita; });
                     pr.procedimentoData.forEach(step => { document.getElementById('btn-add-step').click(); const r = document.getElementById('container-procedimento').lastElementChild; const t = r.querySelector('.step-desc'); t.value = step.desc; setTimeout(() => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }, 10); });
-                    pr.sottoricetteData.forEach(sr => { document.getElementById('btn-add-sottoricetta').click(); const r = document.getElementById('container-sottoricette').lastElementChild; r.querySelector('.sr-id').value = sr.id_figlia; r.querySelector('.sr-moltiplicatore').value = sr.moltiplicatore; });
+
+                    // PRECOMPILAZIONE SOTTORICETTE MODIFICATA (Trova il nome dall'ID)
+                    pr.sottoricetteData.forEach(sr => {
+                        document.getElementById('btn-add-sottoricetta').click();
+                        const r = document.getElementById('container-sottoricette').lastElementChild;
+                        const ricTrovata = ricetteDB.find(x => x.id === sr.id_figlia);
+                        r.querySelector('.sr-nome').value = ricTrovata ? ricTrovata.nome : '';
+                        r.querySelector('.sr-moltiplicatore').value = sr.moltiplicatore;
+                    });
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             };
@@ -278,7 +347,16 @@ async function initInserimento() {
             const tagsSpuntati = Array.from(document.querySelectorAll('.checkbox-tag:checked')).map(cb => cb.value);
             const ingredientiData = Array.from(document.querySelectorAll('.riga-ingrediente')).map(r => ({ nome: r.querySelector('.ing-nome').value.trim(), qta: parseFloat(r.querySelector('.ing-qta').value), unita: r.querySelector('.ing-unita').value.trim() })).filter(i => i.nome !== "");
             const procedimentoData = Array.from(document.querySelectorAll('.riga-step')).map(r => ({ desc: r.querySelector('.step-desc').value.trim() })).filter(s => s.desc !== "");
-            const sottoricetteData = Array.from(document.querySelectorAll('.riga-sottoricetta')).map(r => ({ id_figlia: r.querySelector('.sr-id').value, moltiplicatore: parseFloat(r.querySelector('.sr-moltiplicatore').value) })).filter(sr => sr.id_figlia !== "" && !isNaN(sr.moltiplicatore));
+
+            // LA MAGIA: Cerca il nome della sottoricetta digitato e lo trasforma nel suo ID!
+            const sottoricetteData = Array.from(document.querySelectorAll('.riga-sottoricetta')).map(r => {
+                const nomeCercato = r.querySelector('.sr-nome').value.trim();
+                const ricTrovata = ricetteDB.find(x => x.nome.toLowerCase() === nomeCercato.toLowerCase());
+                return {
+                    id_figlia: ricTrovata ? ricTrovata.id : "",
+                    moltiplicatore: parseFloat(r.querySelector('.sr-moltiplicatore').value)
+                };
+            }).filter(sr => sr.id_figlia !== "" && !isNaN(sr.moltiplicatore));
 
             if (idRicettaInModifica) { await API.aggiornaRicettaCompleta(idRicettaInModifica, ricettaData, ingredientiData, procedimentoData, tagsSpuntati, sottoricetteData); alert("Aggiornata!"); }
             else { await API.salvaRicettaCompleta(ricettaData, ingredientiData, procedimentoData, tagsSpuntati, sottoricetteData); alert("Salvata!"); }
@@ -297,7 +375,10 @@ async function initElenco() {
     try {
         const [ricette, categorie, tags] = await Promise.all([API.getRicetteGalleria(), API.getCategorie(), API.getTags()]);
         let cacheRicette = ricette;
-        let currentView = getPrefs().defaultView;
+
+        const prefs = getPrefs();
+        let currentView = prefs.defaultView || 'grid';
+        let isGrouped = prefs.defaultGrouped !== false; // <-- Legge l'impostazione salvata!
 
         const btnNuovaRicetta = document.getElementById('btn-nuova-ricetta-elenco');
         if (btnNuovaRicetta) {
@@ -308,9 +389,21 @@ async function initElenco() {
             });
         }
 
-        const btnGrid = document.getElementById('btn-view-grid'); const btnList = document.getElementById('btn-view-list');
-        if (currentView === 'list') { btnList.classList.add('active'); btnGrid.classList.remove('active'); }
-        else { btnGrid.classList.add('active'); btnList.classList.remove('active'); }
+        const btnGrid = document.getElementById('btn-view-grid');
+        const btnList = document.getElementById('btn-view-list');
+        const btnCompact = document.getElementById('btn-view-compact');
+        const toggleRaggruppa = document.getElementById('toggle-raggruppa');
+
+        // <-- Allinea l'interruttore grafico alla preferenza salvata
+        if (toggleRaggruppa) toggleRaggruppa.checked = isGrouped;
+        // Funzione per aggiornare graficamente quale bottone è premuto
+        function aggiornaBottoniVista() {
+            [btnGrid, btnList, btnCompact].forEach(b => b.classList.remove('active'));
+            if (currentView === 'list') btnList.classList.add('active');
+            else if (currentView === 'compact') btnCompact.classList.add('active');
+            else btnGrid.classList.add('active');
+        }
+        aggiornaBottoniVista();
 
         const selectCat = document.getElementById('filtro-categoria');
         categorie.forEach(c => selectCat.innerHTML += `<option value="${c.nome}">${c.nome}</option>`);
@@ -318,7 +411,6 @@ async function initElenco() {
         tags.forEach(t => selectTag.innerHTML += `<option value="${t.nome}">${t.nome}</option>`);
         const inputTesto = document.getElementById('filtro-testo');
 
-        // LA FUNZIONE CON IL CONTROLLO BLINDATO
         function applicaFiltri(mantieniAperti = false) {
             const testo = inputTesto.value.toLowerCase().trim();
             const catScelta = selectCat.value;
@@ -326,8 +418,7 @@ async function initElenco() {
 
             let categorieAperte = [];
 
-            // Legge i cassetti aperti SOLO se abbiamo premuto il bottone Grid/List (mantieniAperti === true)
-            if (mantieniAperti === true) {
+            if (mantieniAperti === true && isGrouped) {
                 document.querySelectorAll('#griglia-ricette .collapse.show').forEach(el => {
                     const nome = el.getAttribute('data-cat-nome');
                     if (nome) categorieAperte.push(nome);
@@ -341,22 +432,29 @@ async function initElenco() {
                 return matchTesto && matchCategoria && matchTag;
             });
 
+            // Ordine alfabetico forzato
             filtrate.sort((a, b) => a.nome.localeCompare(b.nome));
 
-            // Passiamo le categorie aperte alla UI
-            UI.renderCards(filtrate, currentView, categorieAperte);
+            UI.renderCards(filtrate, currentView, isGrouped, categorieAperte);
         }
 
-        // RICERCA E FILTRI = FORZANO LA CHIUSURA PASSANDO 'false'
+        // ASCOLTATORI
+        if (toggleRaggruppa) {
+            toggleRaggruppa.addEventListener('change', (e) => {
+                isGrouped = e.target.checked;
+                applicaFiltri(true);
+            });
+        }
+
         inputTesto.addEventListener('input', () => applicaFiltri(false));
         selectCat.addEventListener('change', () => applicaFiltri(false));
         selectTag.addEventListener('change', () => applicaFiltri(false));
 
-        // TASTI VISTA (GRID/LIST) = FORZANO IL MANTENIMENTO PASSANDO 'true'
-        btnGrid.addEventListener('click', () => { currentView = 'grid'; btnGrid.classList.add('active'); btnList.classList.remove('active'); applicaFiltri(true); });
-        btnList.addEventListener('click', () => { currentView = 'list'; btnList.classList.add('active'); btnGrid.classList.remove('active'); applicaFiltri(true); });
+        // Cliccando sui bottoni, aggiorniamo la variabile e la grafica
+        btnGrid.addEventListener('click', () => { currentView = 'grid'; aggiornaBottoniVista(); applicaFiltri(true); });
+        btnList.addEventListener('click', () => { currentView = 'list'; aggiornaBottoniVista(); applicaFiltri(true); });
+        btnCompact.addEventListener('click', () => { currentView = 'compact'; aggiornaBottoniVista(); applicaFiltri(true); });
 
-        // Primo avvio: tutto chiuso
         applicaFiltri(false);
 
         document.getElementById('griglia-ricette').addEventListener('click', (e) => {
@@ -425,8 +523,8 @@ async function apriDettaglioRicetta(id_ricetta) {
             document.querySelectorAll('.nav-link, .bottom-nav-item').forEach(el => el.classList.remove('active'));
             UI.renderInserimento(); await initInserimento();
 
-            document.getElementById('titolo-inserimento').textContent = "✏️ Modifica Ricetta";
-            const bs = document.getElementById('btn-salva-ricetta-top'); bs.textContent = "💾 Salva Modifiche"; bs.classList.replace('btn-success', 'btn-primary');
+            document.getElementById('titolo-inserimento').textContent = "✏️ Modifica ricetta";
+            const bs = document.getElementById('btn-salva-ricetta-top'); bs.textContent = "💾 Salva modifiche"; bs.classList.replace('btn-success', 'btn-primary');
             document.getElementById('btn-elimina-ricetta-form').classList.remove('d-none');
 
             document.getElementById('ricetta-nome').value = ricetta.nome || '';
@@ -442,8 +540,12 @@ async function apriDettaglioRicetta(id_ricetta) {
 
             ricetta.ingredienti?.forEach(ing => { document.getElementById('btn-add-ingrediente').click(); const r = cIng.lastElementChild; r.querySelector('.ing-nome').value = ing.nome_ingrediente; r.querySelector('.ing-qta').value = ing.quantita; r.querySelector('.ing-unita').value = ing.unita_distinta || ''; });
             ricetta.procedimento?.forEach(step => { document.getElementById('btn-add-step').click(); const r = cProc.lastElementChild; const t = r.querySelector('.step-desc'); t.value = step.descrizione; setTimeout(() => t.style.height = t.scrollHeight + 'px', 10); });
-            ricetta.sottoricette_esplose?.forEach(sr => { document.getElementById('btn-add-sottoricetta').click(); const r = cSr.lastElementChild; r.querySelector('.sr-id').value = sr.ricetta_figlia.id; r.querySelector('.sr-moltiplicatore').value = sr.moltiplicatore; });
-            window.scrollTo(0, 0);
+            ricetta.sottoricette_esplose?.forEach(sr => {
+                document.getElementById('btn-add-sottoricetta').click();
+                const r = cSr.lastElementChild;
+                r.querySelector('.sr-nome').value = sr.ricetta_figlia.nome;
+                r.querySelector('.sr-moltiplicatore').value = sr.moltiplicatore;
+            }); window.scrollTo(0, 0);
         });
 
     } catch (error) { UI.container.innerHTML = `<div class="alert alert-danger">Errore db.</div>`; }
@@ -490,12 +592,26 @@ async function avviaModalitaCucina(ricetta, rapportoPorzioni) {
 async function initCalendario() {
     try {
         let [storico, ricette] = await Promise.all([API.getStorico(), API.getRicetteElencoBreve()]);
-        let meseCorrente = new Date().getMonth(), annoCorrente = new Date().getFullYear(), vistaAttiva = 'lista';
+
+        // Leggiamo la preferenza dal localStorage
+        let meseCorrente = new Date().getMonth();
+        let annoCorrente = new Date().getFullYear();
+        let vistaAttiva = getPrefs().defaultCalendarView || 'lista';
 
         const selectRicetta = document.getElementById('prod-ricetta');
         selectRicetta.innerHTML = '<option value="">-- Seleziona la ricetta prodotta --</option>' + ricette.map(r => `<option value="${r.id}">${r.nome}</option>`).join('');
         document.getElementById('prod-data').valueAsDate = new Date();
 
+        // Coloriamo il bottone giusto in base a come si apre
+        const btnViewLista = document.getElementById('btn-view-lista');
+        const btnViewGriglia = document.getElementById('btn-view-griglia');
+        if (vistaAttiva === 'griglia') {
+            if (btnViewGriglia) btnViewGriglia.classList.add('active');
+            if (btnViewLista) btnViewLista.classList.remove('active');
+        } else {
+            if (btnViewLista) btnViewLista.classList.add('active');
+            if (btnViewGriglia) btnViewGriglia.classList.remove('active');
+        }
         function aggiornaStatistiche() {
             const storicoAnno = storico.filter(s => new Date(s.data_svolgimento).getFullYear() === new Date().getFullYear());
             const conteggio = {}; storicoAnno.forEach(s => conteggio[s.ricette.nome] = (conteggio[s.ricette.nome] || 0) + 1);
@@ -548,7 +664,13 @@ async function initCalendario() {
             if (!e.target.value) return; cDet.innerHTML = '<div class="spinner-border spinner-border-sm text-success"></div>';
             try {
                 rSelCom = await API.getRicettaCompleta(e.target.value);
-                const genBlocco = (id, nome, porzioni, unita, isSr) => `<div class="card border-${isSr ? 'warning' : 'primary'} mb-3 riga-produzione-item" data-id="${id}"><div class="card-header bg-${isSr ? 'warning text-dark' : 'primary text-white'} py-2 fw-bold">${isSr ? '↳ Sottoricetta:' : 'Principale:'} ${nome}</div><div class="card-body py-2"><div class="row align-items-center mb-2"><div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input check-porzioni-modificate" type="checkbox" id="cm-${id}"><label class="form-check-label small" for="cm-${id}">Modifica porzioni?</label></div></div><div class="col-md-8"><div class="input-group input-group-sm contenitore-input-porzioni d-none"><span class="input-group-text">Prodotte:</span><input type="number" step="0.1" class="form-control input-porzioni-reali" value="${porzioni}" data-base="${porzioni}"><span class="input-group-text">${unita}</span></div></div></div><textarea class="form-control form-control-sm input-note-produzione" rows="2" placeholder="Note (es. farina debole...)"></textarea><input type="hidden" class="vecchie-note-nascoste" value="${rSelCom.note || ''}"></div></div>`;
+                const genBlocco = (id, nome, porzioni, unita, isSr) => `<div class="card border-${isSr ? 'warning' : 'primary'} mb-3 riga-produzione-item" data-id="${id}"><div class="card-header bg-${isSr ? 'warning text-dark' : 'primary text-white'} py-2 fw-bold">${isSr ? '↳ Sottoricetta:' : 'Principale:'} ${nome}</div><div class="card-body py-2"><div class="row align-items-center mb-2"><div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input check-porzioni-modificate" type="checkbox" id="cm-${id}"><label class="form-check-label small" for="cm-${id}">Modifica porzioni?</label></div></div><div class="col-md-8"><div class="stepper-group contenitore-input-porzioni d-none w-100 shadow-sm mt-2">
+            <span class="bg-light text-muted small px-2 border-end d-flex align-items-center">Prodotte:</span>
+            <button type="button" class="stepper-btn px-2" tabindex="-1" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">−</button>
+            <input type="number" step="0.1" class="form-control stepper-input input-porzioni-reali px-0" value="${porzioniBase}" data-base="${porzioniBase}">
+            <button type="button" class="stepper-btn px-2" tabindex="-1" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">+</button>
+            <span class="bg-light text-muted small px-2 border-start d-flex align-items-center">${unita}</span>
+        </div></div>`;
                 cDet.innerHTML = genBlocco(rSelCom.id, rSelCom.nome, rSelCom.porzioni_base, rSelCom.unita_porzioni, false) + (rSelCom.sottoricette_esplose?.map(sr => genBlocco(sr.ricetta_figlia.id, sr.ricetta_figlia.nome, sr.ricetta_figlia.porzioni_base, sr.ricetta_figlia.unita_porzioni, true)).join('') || '');
                 cDet.querySelectorAll('.check-porzioni-modificate').forEach(chk => chk.addEventListener('change', (ev) => ev.target.checked ? ev.target.closest('.card-body').querySelector('.contenitore-input-porzioni').classList.remove('d-none') : ev.target.closest('.card-body').querySelector('.contenitore-input-porzioni').classList.add('d-none')));
             } catch (err) { cDet.innerHTML = `<div class="alert alert-danger">Errore db.</div>`; }
@@ -573,54 +695,185 @@ async function initCalendario() {
     } catch (error) { UI.container.innerHTML = `<div class="alert alert-danger">Errore calendario.</div>`; }
 }
 
-// --- 9. SPESA ---
+// ==========================================
+// 6. LISTA DELLA SPESA (SINCRONIZZATA IN CLOUD)
+// ==========================================
 async function initSpesa() {
-    const STORAGE_KEY = 'erp_ricettario_spesa';
     let statoSpesa = { ricetteInMenu: [], spunte: {} };
-    try { const mem = localStorage.getItem(STORAGE_KEY); if (mem) statoSpesa = JSON.parse(mem); } catch (e) { localStorage.removeItem(STORAGE_KEY); }
 
-    const selRic = document.getElementById('spesa-select-ricetta'), inpPorz = document.getElementById('spesa-input-porzioni'), btnAgg = document.getElementById('btn-aggiungi-spesa'), listRic = document.getElementById('lista-ricette-spesa'), listAgg = document.getElementById('lista-spesa-aggregata');
+    const selectRicetta = document.getElementById('spesa-select-ricetta');
+    const inputPorzioni = document.getElementById('spesa-input-porzioni');
+    const btnAggiungi = document.getElementById('btn-aggiungi-spesa');
+    const btnSvuota = document.getElementById('btn-svuota-spesa');
+    const listaRicette = document.getElementById('lista-ricette-spesa');
+    const listaAggregata = document.getElementById('lista-spesa-aggregata');
 
+    // 1. SCARICHIAMO LO STATO DELLA SPESA DAL DATABASE (Non più da localStorage!)
     try {
-        const ricette = await API.getRicetteElencoBreve();
-        selRic.innerHTML = '<option value="">-- Seleziona una ricetta --</option>' + ricette.map(r => `<option value="${r.id}">${r.nome}</option>`).join('');
-    } catch (err) { selRic.innerHTML = '<option value="">Errore db</option>'; return; }
-
-    selRic.addEventListener('change', async (e) => {
-        if (!e.target.value) { btnAgg.disabled = true; inpPorz.value = ''; return; }
-        btnAgg.disabled = true; inpPorz.value = "Carica...";
-        try { inpPorz.value = (await API.getRicettaCompleta(e.target.value)).porzioni_base || 1; btnAgg.disabled = false; } catch (err) { inpPorz.value = ''; }
-    });
-
-    function renderDatiSpesa() {
-        listRic.innerHTML = statoSpesa.ricetteInMenu.length === 0 ? '<li class="list-group-item text-muted">Nessuna ricetta.</li>' : statoSpesa.ricetteInMenu.map((item, index) => `<li class="list-group-item d-flex justify-content-between align-items-center bg-white shadow-sm mb-2 border rounded"><div><strong class="text-primary">${item.nome}</strong><br><small class="text-muted">${item.porzioni} porzioni</small></div><button class="btn btn-sm btn-outline-danger btn-rimuovi-ricetta" data-index="${index}">✖</button></li>`).join('');
-
-        let mappaIng = {};
-        statoSpesa.ricetteInMenu.forEach(item => item.ingredientiEsplosi.forEach(ing => {
-            let key = `${ing.nome.trim().toLowerCase()}|${(ing.unita || '').trim().toLowerCase()}`;
-            if (!mappaIng[key]) mappaIng[key] = { nome: ing.nome.charAt(0).toUpperCase() + ing.nome.slice(1).toLowerCase(), unita: ing.unita, qta: 0 };
-            mappaIng[key].qta += ing.qta;
-        }));
-
-        let ingAgg = Object.keys(mappaIng).map(k => ({ key: k, ...mappaIng[k] })).sort((a, b) => a.nome.localeCompare(b.nome));
-        listAgg.innerHTML = ingAgg.length === 0 ? '<li class="list-group-item text-muted p-4 text-center">Nessun ingrediente.</li>' : ingAgg.map(ing => `<li class="list-group-item d-flex align-items-center py-3 border-bottom"><input class="form-check-input me-3 check-ingrediente shadow-sm" style="transform: scale(1.4);" type="checkbox" data-key="${ing.key}" ${statoSpesa.spunte[ing.key] ? 'checked' : ''}><div class="flex-grow-1 ${statoSpesa.spunte[ing.key] ? 'text-decoration-line-through text-muted' : 'fw-bold text-dark'} fs-5">${ing.nome}</div><div class="badge bg-success rounded-pill fs-6 px-3 shadow-sm">${Number(ing.qta.toFixed(2))} ${ing.unita}</div></li>`).join('');
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(statoSpesa));
+        listaAggregata.innerHTML = '<li class="list-group-item text-center text-muted p-4"><div class="spinner-border text-primary spinner-border-sm mb-2"></div><br>Sincronizzazione carrello dal cloud...</li>';
+        statoSpesa = await API.getSpesa();
+    } catch (e) {
+        console.error("Errore caricamento spesa dal DB", e);
     }
 
-    btnAgg.addEventListener('click', async () => {
-        const id = selRic.value, pR = parseFloat(inpPorz.value); if (!id || isNaN(pR)) return;
-        btnAgg.disabled = true; btnAgg.innerHTML = 'Calcolo...';
+    // 2. SCARICHIAMO LE RICETTE (Per la tendina)
+    try {
+        const ricette = await API.getRicetteElencoBreve();
+        selectRicetta.innerHTML = '<option value="">-- Seleziona una ricetta --</option>';
+        ricette.forEach(r => { selectRicetta.innerHTML += `<option value="${r.id}">${r.nome}</option>`; });
+    } catch (errApi) {
+        selectRicetta.innerHTML = '<option value="">Errore di caricamento database</option>'; return;
+    }
+
+    // 3. CAMBIO RICETTA NELLA TENDINA
+    selectRicetta.addEventListener('change', async (e) => {
+        if (!e.target.value) { btnAggiungi.disabled = true; inputPorzioni.value = ''; return; }
+        btnAggiungi.disabled = true; inputPorzioni.value = "Caricamento...";
         try {
-            const r = await API.getRicettaCompleta(id); const rap = pR / r.porzioni_base; let ingEstr = [];
-            r.ingredienti.forEach(i => ingEstr.push({ nome: i.nome_ingrediente, unita: i.unita_distinta, qta: i.quantita * rap }));
-            r.sottoricette_esplose?.forEach(sr => sr.ricetta_figlia.ingredienti.forEach(si => ingEstr.push({ nome: si.nome_ingrediente, unita: si.unita_distinta, qta: si.quantita * (rap * (parseFloat(sr.moltiplicatore) || 1)) })));
-            statoSpesa.ricetteInMenu.push({ id: r.id, nome: r.nome, porzioni: pR, ingredientiEsplosi: ingEstr }); statoSpesa.spunte = {};
-            selRic.value = ''; inpPorz.value = ''; renderDatiSpesa();
-        } catch (e) { alert("Errore BOM."); } finally { btnAgg.disabled = false; btnAgg.innerHTML = '➕ Aggiungi'; }
+            const ric = await API.getRicettaCompleta(e.target.value);
+            inputPorzioni.value = ric.porzioni_base || 1; btnAggiungi.disabled = false;
+        } catch (err) { inputPorzioni.value = ''; alert("Impossibile caricare i dettagli."); }
     });
 
-    listRic.addEventListener('click', (e) => { if (e.target.classList.contains('btn-rimuovi-ricetta')) { statoSpesa.ricetteInMenu.splice(e.target.getAttribute('data-index'), 1); statoSpesa.spunte = {}; renderDatiSpesa(); } });
-    listAgg.addEventListener('change', (e) => { if (e.target.classList.contains('check-ingrediente')) { statoSpesa.spunte[e.target.getAttribute('data-key')] = e.target.checked; renderDatiSpesa(); } });
-    document.getElementById('btn-svuota-spesa').addEventListener('click', () => { if (confirm("Vuoi svuotare il carrello?")) { statoSpesa = { ricetteInMenu: [], spunte: {} }; renderDatiSpesa(); } });
+    // 4. FUNZIONE DI SALVATAGGIO AUTOMATICO
+    function salvaStatoCloud() {
+        // Manda il salvataggio a Supabase in background senza bloccare l'utente
+        API.saveSpesa(statoSpesa);
+    }
+
+    // 5. MOTORE MATEMATICO E AGGIORNAMENTO GRAFICO
+    function renderDatiSpesa() {
+        // A. Render Lista Ricette (Colonna Sinistra)
+        if (statoSpesa.ricetteInMenu.length === 0) {
+            listaRicette.innerHTML = '<li class="list-group-item text-muted small">Nessuna ricetta in programma.</li>';
+        } else {
+            listaRicette.innerHTML = statoSpesa.ricetteInMenu.map((item, index) => `
+                <li class="list-group-item d-flex justify-content-between align-items-center bg-white shadow-sm mb-2 border rounded">
+                    <div>
+                        <strong class="text-primary">${item.nome}</strong><br>
+                        <small class="text-muted">${item.porzioni} porzioni previste</small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger btn-rimuovi-ricetta" data-index="${index}">✖</button>
+                </li>
+            `).join('');
+        }
+
+        // B. Ricalcolo Aggregato
+        let mappaIngredienti = {};
+        statoSpesa.ricetteInMenu.forEach(item => {
+            item.ingredientiEsplosi.forEach(ing => {
+                let nomeNorm = ing.nome.trim().toLowerCase();
+                let unitaNorm = (ing.unita || '').trim().toLowerCase();
+                let key = `${nomeNorm}|${unitaNorm}`;
+
+                if (!mappaIngredienti[key]) {
+                    let nomeDisplay = nomeNorm.charAt(0).toUpperCase() + nomeNorm.slice(1);
+                    mappaIngredienti[key] = { nome: nomeDisplay, unita: ing.unita, qta: 0 };
+                }
+                mappaIngredienti[key].qta += ing.qta;
+            });
+        });
+
+        let ingredientiAggregati = Object.keys(mappaIngredienti).map(key => ({
+            key: key, ...mappaIngredienti[key]
+        })).sort((a, b) => a.nome.localeCompare(b.nome));
+
+        // C. Render Ingredienti Totali (Colonna Destra)
+        if (ingredientiAggregati.length === 0) {
+            listaAggregata.innerHTML = '<li class="list-group-item text-muted p-4 text-center border-0">Aggiungi delle ricette per generare la spesa.</li>';
+        } else {
+            listaAggregata.innerHTML = ingredientiAggregati.map(ing => {
+                const isChecked = statoSpesa.spunte[ing.key] ? 'checked' : '';
+                const textClass = isChecked ? 'text-decoration-line-through text-muted' : 'fw-bold text-dark';
+                const qtaArrotondata = Number(ing.qta.toFixed(2));
+
+                return `
+                <li class="list-group-item d-flex align-items-center py-3 border-bottom">
+                    <input class="form-check-input me-3 check-ingrediente shadow-sm" style="transform: scale(1.4);" type="checkbox" data-key="${ing.key}" ${isChecked}>
+                    <div class="flex-grow-1 ${textClass} fs-5 label-ingrediente">
+                        ${ing.nome}
+                    </div>
+                    <div class="badge bg-success rounded-pill fs-6 px-3 py-2 shadow-sm">
+                        ${qtaArrotondata} ${ing.unita}
+                    </div>
+                </li>`;
+            }).join('');
+        }
+
+        // Ogni volta che si aggiorna la pagina visivamente, la salviamo nel Cloud
+        salvaStatoCloud();
+    }
+
+    // 6. AGGIUNTA DI UNA NUOVA RICETTA ALLA SPESA
+    btnAggiungi.addEventListener('click', async () => {
+        const idRicetta = selectRicetta.value;
+        const porzioniRichieste = parseFloat(inputPorzioni.value);
+        if (!idRicetta || isNaN(porzioniRichieste)) return;
+
+        btnAggiungi.disabled = true;
+        btnAggiungi.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Calcolo BOM...';
+
+        try {
+            const ricetta = await API.getRicettaCompleta(idRicetta);
+            const rapporto = porzioniRichieste / ricetta.porzioni_base;
+            let ingredientiEstratti = [];
+
+            ricetta.ingredienti.forEach(ing => {
+                ingredientiEstratti.push({ nome: ing.nome_ingrediente, unita: ing.unita_distinta, qta: ing.quantita * rapporto });
+            });
+
+            if (ricetta.sottoricette_esplose && ricetta.sottoricette_esplose.length > 0) {
+                ricetta.sottoricette_esplose.forEach(sr => {
+                    const rFiglia = sr.ricetta_figlia;
+                    const moltiplicatoreReale = parseFloat(sr.moltiplicatore) || 1;
+                    const rapportoSotto = rapporto * moltiplicatoreReale;
+
+                    rFiglia.ingredienti.forEach(subIng => {
+                        ingredientiEstratti.push({ nome: subIng.nome_ingrediente, unita: subIng.unita_distinta, qta: subIng.quantita * rapportoSotto });
+                    });
+                });
+            }
+
+            statoSpesa.ricetteInMenu.push({
+                id: ricetta.id, nome: ricetta.nome, porzioni: porzioniRichieste, ingredientiEsplosi: ingredientiEstratti
+            });
+            statoSpesa.spunte = {}; // Resetta le spunte se si aggiunge nuova roba
+
+            selectRicetta.value = ''; inputPorzioni.value = '';
+            btnAggiungi.disabled = true; btnAggiungi.innerHTML = '➕ Aggiungi alla Spesa';
+
+            renderDatiSpesa();
+        } catch (e) {
+            alert("Errore nell'estrazione della distinta base.");
+            btnAggiungi.disabled = false; btnAggiungi.innerHTML = '➕ Aggiungi alla Spesa';
+        }
+    });
+
+    // 7. GESTIONE DEI CLICK SULLE LISTE (Delegate Listener)
+    listaRicette.addEventListener('click', (e) => {
+        if (e.target.classList.contains('btn-rimuovi-ricetta')) {
+            const index = e.target.getAttribute('data-index');
+            statoSpesa.ricetteInMenu.splice(index, 1);
+            statoSpesa.spunte = {};
+            renderDatiSpesa();
+        }
+    });
+
+    listaAggregata.addEventListener('change', (e) => {
+        if (e.target.classList.contains('check-ingrediente')) {
+            const key = e.target.getAttribute('data-key');
+            statoSpesa.spunte[key] = e.target.checked;
+            renderDatiSpesa();
+        }
+    });
+
+    btnSvuota.addEventListener('click', () => {
+        if (confirm("Vuoi cancellare tutto il menu e le spunte del supermercato da tutti i dispositivi?")) {
+            statoSpesa = { ricetteInMenu: [], spunte: {} };
+            renderDatiSpesa();
+        }
+    });
+
+    // Primo caricamento appena si apre la tab
     renderDatiSpesa();
 }
