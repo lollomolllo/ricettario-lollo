@@ -276,28 +276,19 @@ const API = {
         return id_ricetta;
     },
 
+    // --- DIZIONARIO INGREDIENTI CENTRALE ---
     getDizionarioIngredienti: async () => {
-        // Scarichiamo tutti gli ingredienti usati finora
-        const { data, error } = await supabaseClient
-            .from('ingredienti')
-            .select('nome_ingrediente, unita_distinta');
-
+        const { data, error } = await supabaseClient.from('dizionario_ingredienti').select('*').order('nome');
         if (error) throw error;
-
-        // Estraiamo i nomi, li mettiamo in minuscolo per confrontarli, togliamo i doppioni (Set) e li rimettiamo in maiuscolo
-        const nomiUnici = [...new Set(data.map(i => i.nome_ingrediente.trim().toLowerCase()))]
-            .filter(n => n)
-            .map(n => n.charAt(0).toUpperCase() + n.slice(1)); // Inizia con la maiuscola
-
-        // Stessa cosa per le unità di misura (g, ml, cucchiai, ecc.)
-        const unitaUniche = [...new Set(data.map(i => (i.unita_distinta || '').trim().toLowerCase()))]
-            .filter(u => u);
-
-        // Li restituiamo in ordine alfabetico
-        return {
-            nomi: nomiUnici.sort(),
-            unita: unitaUniche.sort()
-        };
+        return data; // Ritorna id, nome e unita_misura
+    },
+    addIngredienteDizionario: async (nome, unita_misura) => {
+        const { error } = await supabaseClient.from('dizionario_ingredienti').insert([{ nome, unita_misura }]);
+        if (error) throw error;
+    },
+    deleteIngredienteDizionario: async (id) => {
+        const { error } = await supabaseClient.from('dizionario_ingredienti').delete().eq('id', id);
+        if (error) throw error;
     },
 
     // ==========================================

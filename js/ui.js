@@ -221,39 +221,23 @@ const UI = {
             <div class="row">
                 <div class="col-md-6 mb-4">
                     <div class="card shadow-sm border-0 h-100">
-                        <div class="card-header bg-dark text-white fw-bold p-3">Preferenze grafiche e di visualizzazione</div>
+                        <div class="card-header bg-dark text-white fw-bold p-3">🎨 Preferenze grafiche</div>
                         <div class="card-body bg-white p-4">
                             <div class="mb-4">
                                 <label class="form-label fw-bold text-dark">Tema dell'app</label>
-                                <select class="form-select shadow-sm" id="pref-theme">
-                                    <option value="light">Chiaro</option>
-                                    <option value="dark">Scuro</option>
-                                </select>
+                                <select class="form-select shadow-sm" id="pref-theme"><option value="light">Chiaro</option><option value="dark">Scuro</option></select>
                             </div>
-                            
                             <div class="mb-4">
-                                <label class="form-label fw-bold text-dark">Vista predefinita della galleria</label>
-                                <select class="form-select shadow-sm" id="pref-view">
-                                    <option value="grid">Griglia a card</option>
-                                    <option value="list">Elenco con miniatura</option>
-                                    <option value="compact">Elenco compatto</option>
-                                </select>
+                                <label class="form-label fw-bold text-dark">Vista galleria</label>
+                                <select class="form-select shadow-sm" id="pref-view"><option value="grid">Griglia</option><option value="list">Elenco</option><option value="compact">Compatto</option></select>
                             </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label fw-bold text-dark">Raggruppamento predefinito ricette</label>
-                                <select class="form-select shadow-sm" id="pref-grouped">
-                                    <option value="true">Divise in categorie</option>
-                                    <option value="false">Elenco unico</option>
-                                </select>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-dark">Raggruppamento ricette</label>
+                                <select class="form-select shadow-sm" id="pref-grouped"><option value="true">Cassetti (Categorie)</option><option value="false">Alfabetico (A-Z)</option></select>
                             </div>
-
                             <div class="mb-3">
-                                <label class="form-label fw-bold text-dark">Vista predefinita diario/calendario</label>
-                                <select class="form-select shadow-sm" id="pref-calendar-view">
-                                    <option value="lista">Diario</option>
-                                    <option value="griglia">Calendario</option>
-                                </select>
+                                <label class="form-label fw-bold text-dark">Vista Diario/Calendario</label>
+                                <select class="form-select shadow-sm" id="pref-calendar-view"><option value="lista">Lista cronologica</option><option value="griglia">Griglia mensile</option></select>
                             </div>
                         </div>
                     </div>
@@ -261,29 +245,37 @@ const UI = {
 
                 <div class="col-md-6 mb-4">
                     <div class="card shadow-sm border-0 h-100">
-                        <div class="card-header bg-primary text-white fw-bold p-3">Gestione categorie e tag</div>
+                        <div class="card-header bg-primary text-white fw-bold p-3">🏷️ Categorie e Tag</div>
                         <div class="card-body bg-white p-4">
                             <div class="mb-4">
-                                <label class="form-label fw-bold text-primary">Le tue categorie</label>
-                                <div class="input-group shadow-sm mb-2">
-                                    <input type="text" id="input-categoria" class="form-control">
-                                    <button class="btn btn-primary fw-bold" id="btn-add-categoria">Aggiungi</button>
-                                </div>
-                                <ul class="list-group shadow-sm" id="lista-categorie" style="max-height: 180px; overflow-y: auto;">
-                                    <li class="list-group-item text-center text-muted">Caricamento...</li>
-                                </ul>
+                                <label class="form-label fw-bold text-primary">Categorie</label>
+                                <div class="input-group shadow-sm mb-2"><input type="text" id="input-categoria" class="form-control"><button class="btn btn-primary fw-bold" id="btn-add-categoria">+</button></div>
+                                <ul class="list-group shadow-sm" id="lista-categorie" style="max-height: 120px; overflow-y: auto;"></ul>
                             </div>
-                            <hr class="my-4">
                             <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">I tuoi tag</label>
-                                <div class="input-group shadow-sm mb-2">
-                                    <input type="text" id="input-tag" class="form-control">
-                                    <button class="btn btn-secondary fw-bold text-white" id="btn-add-tag">Aggiungi</button>
-                                </div>
-                                <ul class="list-group shadow-sm" id="lista-tag" style="max-height: 180px; overflow-y: auto;">
-                                    <li class="list-group-item text-center text-muted">Caricamento...</li>
-                                </ul>
+                                <label class="form-label fw-bold text-secondary">Tag</label>
+                                <div class="input-group shadow-sm mb-2"><input type="text" id="input-tag" class="form-control"><button class="btn btn-secondary fw-bold text-white" id="btn-add-tag">+</button></div>
+                                <ul class="list-group shadow-sm" id="lista-tag" style="max-height: 120px; overflow-y: auto;"></ul>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 mb-5">
+                    <div class="card shadow-sm border-warning">
+                        <div class="card-header bg-warning text-dark fw-bold p-3">🛒 Dizionario Ingredienti Centrale</div>
+                        <div class="card-body bg-white p-4">
+                            <p class="small text-muted mb-3">Gli ingredienti inseriti qui saranno <strong>gli unici selezionabili</strong> nelle ricette. Separa più unità di misura con la virgola (es. <span class="badge bg-light text-dark">g, ml</span> oppure <span class="badge bg-light text-dark">pz</span>).</p>
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-5"><input type="text" id="input-ing-nome" class="form-control" placeholder="Nome (es. Farina 00)"></div>
+                                <div class="col-md-5"><input type="text" id="input-ing-unita" class="form-control" placeholder="Unità ammesse (es. g, ml)"></div>
+                                <div class="col-md-2"><button class="btn btn-warning w-100 fw-bold" id="btn-add-ingrediente-diz">Aggiungi</button></div>
+                            </div>
+                            <ul class="list-group shadow-sm" id="lista-ingredienti-diz" style="max-height: 300px; overflow-y: auto;">
+                                <li class="list-group-item text-center text-muted">Caricamento...</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -499,24 +491,35 @@ const UI = {
         tags.forEach(tag => lista.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">${tag.nome}<button class="btn btn-sm btn-outline-danger btn-delete-tag" data-id="${tag.id}">X</button></li>`);
     },
 
-    getIngredienteRowHTML: function () {
+    renderListaIngredientiDizionario: function (ingredienti) {
+        const lista = document.getElementById('lista-ingredienti-diz');
+        if (!lista) return;
+        lista.innerHTML = ingredienti.length === 0 ? '<li class="list-group-item text-muted">Nessun ingrediente inserito.</li>' : '';
+        ingredienti.forEach(ing => lista.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center"><span><strong>${ing.nome}</strong> <span class="text-muted small ms-2">(Unità ammesse: ${ing.unita_misura})</span></span><button class="btn btn-sm btn-outline-danger btn-delete-ingrediente-diz" data-id="${ing.id}">✖</button></li>`);
+    },
+
+    getIngredienteRowHTML: function (opzioniIngredientiHtml = '<option value="">Caricamento...</option>') {
         return `
             <div class="row align-items-center mb-2 riga-ingrediente">
-                <div class="col-4">
-                    <input type="text" class="form-control ing-nome" list="dizionario-ingredienti" required>
+                <div class="col-md-5 mb-2 mb-md-0">
+                    <select class="form-select ing-nome fw-bold" required>
+                        ${opzioniIngredientiHtml}
+                    </select>
                 </div>
-                <div class="col-4">
+                <div class="col-md-3 mb-2 mb-md-0">
                     <div class="stepper-group shadow-sm">
                         <button type="button" class="stepper-btn px-2" tabindex="-1" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">−</button>
                         <input type="number" step="0.1" class="form-control stepper-input ing-qta px-0" required>
                         <button type="button" class="stepper-btn px-2" tabindex="-1" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">+</button>
                     </div>
                 </div>
-                <div class="col-3">
-                    <input type="text" class="form-control ing-unita" list="dizionario-unita">
+                <div class="col-md-3 mb-2 mb-md-0">
+                    <select class="form-select ing-unita text-muted bg-light" required>
+                        <option value="">-- Unità --</option>
+                    </select>
                 </div>
-                <div class="col-1 text-end">
-                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row">✖</button>
+                <div class="col-md-1 text-end">
+                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row" tabindex="-1">✖</button>
                 </div>
             </div>
         `;
@@ -524,12 +527,13 @@ const UI = {
 
 
 
-    // Rimuoviamo il vecchio parametro "optionsRicette" perché ora usa il dizionario dinamico
-    getSottoricettaRowHTML: function () {
+    getSottoricettaRowHTML: function (opzioniRicetteHtml = '<option value="">Caricamento...</option>') {
         return `
             <div class="row mb-2 riga-sottoricetta align-items-center mt-2">
                 <div class="col-md-7 mb-2 mb-md-0">
-                    <input type="text" class="form-control sr-nome" placeholder="Cerca e seleziona ricetta..." list="dizionario-ricette" required>
+                    <select class="form-select sr-nome" required>
+                        ${opzioniRicetteHtml}
+                    </select>
                 </div>
                 <div class="col-md-4 mb-2 mb-md-0">
                     <div class="stepper-group shadow-sm">
@@ -644,7 +648,7 @@ const UI = {
                             <label class="form-label fw-bold">Porzioni da produrre (${ricetta.unita_porzioni}):</label>
                             <div class="stepper-group mb-4 shadow-sm" style="height: 55px;">
                                 <button type="button" class="stepper-btn fs-3 px-4" tabindex="-1" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">−</button>
-                                <input type="number" step="0.1" class="form-control stepper-input text-primary fs-4" id="input-ricalcolo" value="${ricetta.porzioni_base}">
+                                <input type="number" step="1" class="form-control stepper-input text-primary fs-4" id="input-ricalcolo" value="${ricetta.porzioni_base}">
                                 <button type="button" class="stepper-btn fs-3 px-4" tabindex="-1" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">+</button>
                             </div>
 

@@ -83,145 +83,109 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
     catch (err) { errDiv.classList.remove('d-none'); btn.disabled = false; btn.textContent = "Accedi al Ricettario"; }
 });
 
-// --- 4. IMPOSTAZIONI ---
-async function initImpostazioni() {
-    const prefs = getPrefs();
-    const selectView = document.getElementById('pref-view');
-    const selectTheme = document.getElementById('pref-theme');
-    const selectGrouped = document.getElementById('pref-grouped');
-    const selectCalendarView = document.getElementById('pref-calendar-view');
-
-    if (selectView) selectView.value = prefs.defaultView || 'grid';
-    if (selectTheme) selectTheme.value = prefs.theme || 'light';
-    if (selectGrouped) selectGrouped.value = prefs.defaultGrouped !== false ? 'true' : 'false';
-    if (selectCalendarView) selectCalendarView.value = prefs.defaultCalendarView || 'lista';
-
-    if (selectView) selectView.addEventListener('change', (e) => { prefs.defaultView = e.target.value; savePrefs(prefs); });
-    if (selectTheme) selectTheme.addEventListener('change', (e) => { prefs.theme = e.target.value; savePrefs(prefs); applicaTema(); });
-    if (selectGrouped) selectGrouped.addEventListener('change', (e) => { prefs.defaultGrouped = (e.target.value === 'true'); savePrefs(prefs); });
-    if (selectCalendarView) selectCalendarView.addEventListener('change', (e) => { prefs.defaultCalendarView = e.target.value; savePrefs(prefs); });
-
-    // APERTURA DEL MANUALE D'USO
-    const btnManuale = document.getElementById('btn-apri-manuale');
-    if (btnManuale) {
-        btnManuale.addEventListener('click', () => {
-            // Disegna il manuale
-            UI.renderManuale();
-            window.scrollTo(0, 0); // Riporta su la pagina
-
-            // Attiva il tasto "Torna Indietro" all'interno del manuale
-            document.getElementById('btn-chiudi-manuale').addEventListener('click', () => {
-                UI.renderImpostazioni();
-                initImpostazioni(); // Ri-inizializza il pannello impostazioni
-                window.scrollTo(0, 0);
-            });
-        });
-    }
-
-    await loadDizionari();
-
-    // INSERIMENTO CATEGORIE (Con controllo doppioni)
-    document.getElementById('btn-add-categoria').addEventListener('click', async () => {
-        const val = document.getElementById('input-categoria').value.trim();
-        if (val) {
-            const categorieEsistenti = await API.getCategorie();
-            const giaPresente = categorieEsistenti.some(c => c.nome.toLowerCase() === val.toLowerCase());
-
-            if (giaPresente) {
-                alert("⚠️ Attenzione: Questa categoria esiste già!");
-                return; // Blocca tutto e non salva
-            }
-
-            await API.addCategoria(val);
-            document.getElementById('input-categoria').value = '';
-            await loadDizionari();
-        }
-    });
-
-    // INSERIMENTO TAG (Con controllo doppioni)
-    document.getElementById('btn-add-tag').addEventListener('click', async () => {
-        const val = document.getElementById('input-tag').value.trim();
-        if (val) {
-            const tagsEsistenti = await API.getTags();
-            const giaPresente = tagsEsistenti.some(t => t.nome.toLowerCase() === val.toLowerCase());
-
-            if (giaPresente) {
-                alert("⚠️ Attenzione: Questo tag esiste già!");
-                return; // Blocca tutto e non salva
-            }
-
-            await API.addTag(val);
-            document.getElementById('input-tag').value = '';
-            await loadDizionari();
-        }
-    });
-
-    // ELIMINAZIONE
-    document.getElementById('lista-categorie').addEventListener('click', async (e) => {
-        if (e.target.classList.contains('btn-delete-categoria') && confirm('Vuoi eliminare questa categoria?')) {
-            await API.deleteCategoria(e.target.getAttribute('data-id'));
-            await loadDizionari();
-        }
-    });
-    document.getElementById('lista-tag').addEventListener('click', async (e) => {
-        if (e.target.classList.contains('btn-delete-tag') && confirm('Vuoi eliminare questo tag?')) {
-            await API.deleteTag(e.target.getAttribute('data-id'));
-            await loadDizionari();
-        }
-    });
-}
-
 async function loadDizionari() {
     UI.renderListaCategorie(await API.getCategorie());
     UI.renderListaTag(await API.getTags());
+    UI.renderListaIngredientiDizionario(await API.getDizionarioIngredienti());
+}
+
+async function initImpostazioni() {
+    const prefs = getPrefs();
+    document.getElementById('pref-view').value = prefs.defaultView || 'grid';
+    document.getElementById('pref-theme').value = prefs.theme || 'light';
+    document.getElementById('pref-grouped').value = prefs.defaultGrouped !== false ? 'true' : 'false';
+    document.getElementById('pref-calendar-view').value = prefs.defaultCalendarView || 'lista';
+
+    document.getElementById('pref-view').addEventListener('change', (e) => { prefs.defaultView = e.target.value; savePrefs(prefs); });
+    document.getElementById('pref-theme').addEventListener('change', (e) => { prefs.theme = e.target.value; savePrefs(prefs); applicaTema(); });
+    document.getElementById('pref-grouped').addEventListener('change', (e) => { prefs.defaultGrouped = (e.target.value === 'true'); savePrefs(prefs); });
+    document.getElementById('pref-calendar-view').addEventListener('change', (e) => { prefs.defaultCalendarView = e.target.value; savePrefs(prefs); });
+
+    await loadDizionari();
+
+    document.getElementById('btn-add-categoria').addEventListener('click', async () => { const v = document.getElementById('input-categoria').value.trim(); if (v && !(await API.getCategorie()).some(c => c.nome.toLowerCase() === v.toLowerCase())) { await API.addCategoria(v); document.getElementById('input-categoria').value = ''; await loadDizionari(); } });
+    document.getElementById('btn-add-tag').addEventListener('click', async () => { const v = document.getElementById('input-tag').value.trim(); if (v && !(await API.getTags()).some(t => t.nome.toLowerCase() === v.toLowerCase())) { await API.addTag(v); document.getElementById('input-tag').value = ''; await loadDizionari(); } });
+
+    // LOGICA NUOVO DIZIONARIO INGREDIENTI
+    document.getElementById('btn-add-ingrediente-diz').addEventListener('click', async () => {
+        const nome = document.getElementById('input-ing-nome').value.trim();
+        const unita = document.getElementById('input-ing-unita').value.trim();
+        if (nome && unita) {
+            const dbIng = await API.getDizionarioIngredienti();
+            if (dbIng.some(i => i.nome.toLowerCase() === nome.toLowerCase())) { alert("Ingrediente già presente!"); return; }
+            await API.addIngredienteDizionario(nome, unita);
+            document.getElementById('input-ing-nome').value = ''; document.getElementById('input-ing-unita').value = '';
+            await loadDizionari();
+        } else { alert("Inserisci sia il nome che le unità di misura ammesse!"); }
+    });
+
+    document.getElementById('lista-categorie').addEventListener('click', async (e) => { if (e.target.classList.contains('btn-delete-categoria') && confirm('Sicuro?')) { await API.deleteCategoria(e.target.getAttribute('data-id')); await loadDizionari(); } });
+    document.getElementById('lista-tag').addEventListener('click', async (e) => { if (e.target.classList.contains('btn-delete-tag') && confirm('Sicuro?')) { await API.deleteTag(e.target.getAttribute('data-id')); await loadDizionari(); } });
+    document.getElementById('lista-ingredienti-diz').addEventListener('click', async (e) => { if (e.target.classList.contains('btn-delete-ingrediente-diz') && confirm('Vuoi eliminare questo ingrediente dal dizionario centrale?')) { await API.deleteIngredienteDizionario(e.target.getAttribute('data-id')); await loadDizionari(); } });
 }
 // ==========================================
 // 2. INSERIMENTO E MODIFICA (Form)
 // ==========================================
 async function initInserimento() {
-    let categorieDB = [];
-    let tagsDB = [];
-    let ricetteDB = [];
-
-    // INIETTIAMO I DATALIST INVISIBILI NEL BODY
-    if (!document.getElementById('dizionario-ingredienti')) {
-        document.body.insertAdjacentHTML('beforeend', `
-            <datalist id="dizionario-ingredienti"></datalist>
-            <datalist id="dizionario-unita"></datalist>
-            <datalist id="dizionario-ricette"></datalist>
-        `);
+    let categorieDB = [], tagsDB = [], ricetteDB = [], dizionarioIngredientiDB = [];
+    let opzioniIngredientiHTML = '<option value="">Seleziona ingrediente...</option>';
+    let opzioniRicetteHTML = '<option value="">Seleziona ricetta...</option>'; // <--- AGGIUNGI QUESTA
+    if (!document.getElementById('dizionario-ricette')) {
+        document.body.insertAdjacentHTML('beforeend', `<datalist id="dizionario-ricette"></datalist>`);
     }
 
     try {
-        const [categorie, tags, ricette, dizionario] = await Promise.all([
-            API.getCategorie(), API.getTags(), API.getRicetteElencoBreve(), API.getDizionarioIngredienti()
-        ]);
-        categorieDB = categorie; tagsDB = tags; ricetteDB = ricette;
+        const [categorie, tags, ricette, dizIng] = await Promise.all([API.getCategorie(), API.getTags(), API.getRicetteElencoBreve(), API.getDizionarioIngredienti()]);
+        categorieDB = categorie; tagsDB = tags; ricetteDB = ricette; dizionarioIngredientiDB = dizIng;
 
-        document.getElementById('dizionario-ingredienti').innerHTML = dizionario.nomi.map(n => `<option value="${n}">`).join('');
-        document.getElementById('dizionario-unita').innerHTML = dizionario.unita.map(u => `<option value="${u}">`).join('');
         document.getElementById('dizionario-ricette').innerHTML = ricette.map(r => `<option value="${r.nome}">`).join('');
 
         const selectCat = document.getElementById('ricetta-categoria');
+        selectCat.innerHTML = '<option value="">Seleziona...</option>';
         categorie.forEach(c => selectCat.innerHTML += `<option value="${c.id}">${c.nome}</option>`);
 
-        const containerTags = document.getElementById('container-tags');
-        containerTags.innerHTML = tags.map(t => `<div class="form-check form-check-inline"><input class="form-check-input checkbox-tag" type="checkbox" value="${t.id}" id="tag-${t.id}"><label class="form-check-label" for="tag-${t.id}">${t.nome}</label></div>`).join('') || '<span class="text-muted small">Nessun tag.</span>';
+        document.getElementById('container-tags').innerHTML = tags.map(t => `<div class="form-check form-check-inline"><input class="form-check-input checkbox-tag" type="checkbox" value="${t.id}" id="tag-${t.id}"><label class="form-check-label" for="tag-${t.id}">${t.nome}</label></div>`).join('') || '<span class="text-muted small">Nessun tag.</span>';
 
+        dizIng.forEach(ing => opzioniIngredientiHTML += `<option value="${ing.nome}">${ing.nome}</option>`);
+        ricette.forEach(r => opzioniRicetteHTML += `<option value="${r.nome}">${r.nome}</option>`);
     } catch (e) { console.error("Errore caricamento dizionari:", e); }
 
-    // --- LOGICA PULSANTI AGGIUNTA RIGHE DINAMICHE ---
-    document.getElementById('btn-add-ingrediente').addEventListener('click', () => { document.getElementById('container-ingredienti').insertAdjacentHTML('beforeend', UI.getIngredienteRowHTML()); });
-    document.getElementById('btn-add-step').addEventListener('click', () => { document.getElementById('container-procedimento').insertAdjacentHTML('beforeend', UI.getStepRowHTML()); aggiornaNumeriStep(); });
-    document.getElementById('btn-add-sottoricetta').addEventListener('click', () => { document.getElementById('container-sottoricette').insertAdjacentHTML('beforeend', UI.getSottoricettaRowHTML()); });
+    // --- AGGIUNTA RIGHE DINAMICHE ---
+    document.getElementById('btn-add-ingrediente').addEventListener('click', () => {
+        document.getElementById('container-ingredienti').insertAdjacentHTML('beforeend', UI.getIngredienteRowHTML(opzioniIngredientiHTML));
+    });
 
+    document.getElementById('btn-add-step').addEventListener('click', () => {
+        document.getElementById('container-procedimento').insertAdjacentHTML('beforeend', UI.getStepRowHTML());
+        aggiornaNumeriStep();
+    });
+
+    document.getElementById('btn-add-sottoricetta').addEventListener('click', () => {
+        document.getElementById('container-sottoricette').insertAdjacentHTML('beforeend', UI.getSottoricettaRowHTML(opzioniRicetteHTML));
+    });
+
+    // --- MAGIA: GESTIONE AUTOMATICA DELLE UNITÀ DI MISURA ---
+    document.getElementById('container-ingredienti').addEventListener('change', (e) => {
+        if (e.target.classList.contains('ing-nome')) {
+            const nomeScelto = e.target.value;
+            const selectUnita = e.target.closest('.riga-ingrediente').querySelector('.ing-unita');
+
+            selectUnita.innerHTML = ''; // Svuota l'opzione vuota
+
+            const ingTrovato = dizionarioIngredientiDB.find(i => i.nome === nomeScelto);
+            if (ingTrovato) {
+                const unitaAmmesse = ingTrovato.unita_misura.split(',').map(u => u.trim());
+                unitaAmmesse.forEach((u, index) => {
+                    selectUnita.innerHTML += `<option value="${u}" ${index === 0 ? 'selected' : ''}>${u}</option>`;
+                });
+            }
+        }
+    });
+
+    // Eliminazione righe
     document.getElementById('form-ricetta').addEventListener('click', (e) => {
         if (e.target.classList.contains('btn-remove-row')) { e.target.closest('.row').remove(); aggiornaNumeriStep(); }
     });
-
-    if (!idRicettaInModifica) {
-        document.getElementById('btn-add-ingrediente').click(); document.getElementById('btn-add-step').click();
-    }
 
     // ==========================================
     // LOGICA DI IMPORTAZIONE TXT ANTIPROIETTILE
@@ -230,10 +194,7 @@ async function initInserimento() {
     const inputImport = document.getElementById('input-import-txt');
 
     if (btnImport && inputImport) {
-        const nuovoBtnImport = btnImport.cloneNode(true);
-        btnImport.parentNode.replaceChild(nuovoBtnImport, btnImport);
-
-        nuovoBtnImport.addEventListener('click', (e) => { e.preventDefault(); inputImport.click(); });
+        btnImport.addEventListener('click', (e) => { e.preventDefault(); inputImport.click(); });
 
         inputImport.addEventListener('change', async (e) => {
             const file = e.target.files[0];
@@ -250,11 +211,7 @@ async function initInserimento() {
 
                 let ricetteProcessate = [];
                 for (let blocco of blocchi) {
-                    const estraiCampo = (chiave) => {
-                        const match = blocco.match(new RegExp(`${chiave}:\\s*(.*)`, 'i'));
-                        return match ? match[1].trim() : '';
-                    };
-
+                    const estraiCampo = (chiave) => { const match = blocco.match(new RegExp(`${chiave}:\\s*(.*)`, 'i')); return match ? match[1].trim() : ''; };
                     const estraiSezione = (titolo) => {
                         const parti = blocco.split(new RegExp(`--- ${titolo} ---`, 'i'));
                         if (parti.length < 2) return '';
@@ -265,27 +222,17 @@ async function initInserimento() {
                     };
 
                     const nome = estraiCampo('NOME'); if (!nome) continue;
-
-                    let id_categoria = null;
-                    const catNome = estraiCampo('CATEGORIA');
+                    let id_categoria = null; const catNome = estraiCampo('CATEGORIA');
                     if (catNome) { const catTrovata = categorieDB.find(c => c.nome.toLowerCase() === catNome.toLowerCase()); if (catTrovata) id_categoria = catTrovata.id; }
 
                     let tagsSpuntati = [];
                     const tagsString = estraiCampo('TAGS');
-                    if (tagsString) {
-                        tagsString.split(',').map(t => t.trim().toLowerCase()).forEach(nt => {
-                            const tTrovato = tagsDB.find(t => t.nome.toLowerCase() === nt); if (tTrovato) tagsSpuntati.push(tTrovato.id);
-                        });
-                    }
+                    if (tagsString) { tagsString.split(',').map(t => t.trim().toLowerCase()).forEach(nt => { const tTrovato = tagsDB.find(t => t.nome.toLowerCase() === nt); if (tTrovato) tagsSpuntati.push(tTrovato.id); }); }
 
                     const ricettaData = {
-                        nome: nome, id_categoria: id_categoria,
-                        porzioni_base: parseFloat(estraiCampo('PORZIONI').replace(',', '.')) || 1,
-                        unita_porzioni: estraiCampo('UNITA') || 'pz',
-                        tempo_riposo_ore: parseFloat(estraiCampo('RIPOSO \\(ore\\)').replace(',', '.')) || 0,
-                        tempo_cottura_min: parseInt(estraiCampo('COTTURA \\(min\\)')) || 0,
-                        fonte: estraiCampo('FONTE'), link_fonte: estraiCampo('LINK'), note: estraiCampo('NOTE'),
-                        url_immagine: estraiCampo('IMMAGINE') || null // Legge il link dal TXT
+                        nome: nome, id_categoria: id_categoria, porzioni_base: parseFloat(estraiCampo('PORZIONI').replace(',', '.')) || 1, unita_porzioni: estraiCampo('UNITA') || 'pz',
+                        tempo_riposo_ore: parseFloat(estraiCampo('RIPOSO \\(ore\\)').replace(',', '.')) || 0, tempo_cottura_min: parseInt(estraiCampo('COTTURA \\(min\\)')) || 0,
+                        fonte: estraiCampo('FONTE'), link_fonte: estraiCampo('LINK'), note: estraiCampo('NOTE'), url_immagine: estraiCampo('IMMAGINE') || null
                     };
 
                     const ingredientiData = [];
@@ -293,20 +240,14 @@ async function initInserimento() {
                     if (bloccoIng) {
                         bloccoIng.split('\n').forEach(linea => {
                             let l = linea.trim().replace(/^[\-\*\•]\s*/, '');
-                            if (l.includes('|')) {
-                                const parti = l.split('|').map(p => p.trim());
-                                if (parti.length >= 2) ingredientiData.push({ nome: parti[0], qta: parseFloat(parti[1].replace(',', '.')) || 0, unita: parti[2] || '' });
-                            }
+                            if (l.includes('|')) { const parti = l.split('|').map(p => p.trim()); if (parti.length >= 2) ingredientiData.push({ nome: parti[0], qta: parseFloat(parti[1].replace(',', '.')) || 0, unita: parti[2] || '' }); }
                         });
                     }
 
                     const procedimentoData = [];
                     const bloccoProc = estraiSezione('PROCEDIMENTO');
                     if (bloccoProc) {
-                        bloccoProc.split('\n').forEach(linea => {
-                            let l = linea.trim();
-                            if (l !== '') { l = l.replace(/^\d+[\.\-\)]\s*/, ''); procedimentoData.push({ desc: l }); }
-                        });
+                        bloccoProc.split('\n').forEach(linea => { let l = linea.trim(); if (l !== '') { l = l.replace(/^\d+[\.\-\)]\s*/, ''); procedimentoData.push({ desc: l }); } });
                     }
 
                     const sottoricetteData = [];
@@ -314,13 +255,7 @@ async function initInserimento() {
                     if (bloccoSr) {
                         bloccoSr.split('\n').forEach(linea => {
                             let l = linea.trim().replace(/^[\-\*\•]\s*/, '');
-                            if (l.includes('|')) {
-                                const parti = l.split('|').map(p => p.trim());
-                                if (parti.length >= 2) {
-                                    const ricTrovata = ricetteDB.find(r => r.nome.toLowerCase() === parti[0].toLowerCase());
-                                    if (ricTrovata) sottoricetteData.push({ id_figlia: ricTrovata.id, moltiplicatore: parseFloat(parti[1].replace(',', '.')) || 1 });
-                                }
-                            }
+                            if (l.includes('|')) { const parti = l.split('|').map(p => p.trim()); if (parti.length >= 2) { const ricTrovata = ricetteDB.find(r => r.nome.toLowerCase() === parti[0].toLowerCase()); if (ricTrovata) sottoricetteData.push({ id_figlia: ricTrovata.id, moltiplicatore: parseFloat(parti[1].replace(',', '.')) || 1 }); } }
                         });
                     }
 
@@ -330,72 +265,50 @@ async function initInserimento() {
                 if (ricetteProcessate.length === 0) return;
 
                 if (sceltaSalvataggio) {
-                    nuovoBtnImport.disabled = true; nuovoBtnImport.textContent = "Download immagini e Salvataggio...";
+                    btnImport.disabled = true; btnImport.textContent = "Salvataggio...";
                     try {
                         for (let r of ricetteProcessate) {
-                            // SCARICA E CARICA IMMAGINE IN CLOUD
                             if (r.ricettaData.url_immagine && r.ricettaData.url_immagine.startsWith('http')) {
-                                try {
-                                    const resp = await fetch(r.ricettaData.url_immagine);
-                                    const blob = await resp.blob();
-                                    const file = new File([blob], `img_importata_${Date.now()}.jpg`, { type: blob.type });
-                                    r.ricettaData.url_immagine = await API.uploadImmagine(file);
-                                } catch (e) {
-                                    console.warn("Immagine protetta dal sito sorgente. Uso il link diretto.");
-                                    // Lascia il link web originale, che verrà comunque mostrato!
-                                }
+                                try { const resp = await fetch(r.ricettaData.url_immagine); const blob = await resp.blob(); const file = new File([blob], `img_importata_${Date.now()}.jpg`, { type: blob.type }); r.ricettaData.url_immagine = await API.uploadImmagine(file); } catch (e) { console.warn("Errore download immagine"); }
                             }
                             await API.salvaRicettaCompleta(r.ricettaData, r.ingredientiData, r.procedimentoData, r.tagsSpuntati, r.sottoricetteData);
                         }
-                        alert(`Successo! Importate direttamente ${ricetteProcessate.length} ricette.`);
-                        document.getElementById('nav-elenco').click();
-                    } catch (err) { alert("Errore salvataggio: " + err.message); }
-                    finally { nuovoBtnImport.disabled = false; nuovoBtnImport.innerHTML = "📄 Importa da TXT"; }
+                        alert(`Successo! Importate direttamente ${ricetteProcessate.length} ricette.`); document.getElementById('nav-elenco').click();
+                    } catch (err) { alert("Errore salvataggio: " + err.message); } finally { btnImport.disabled = false; btnImport.innerHTML = "📄 Importa da TXT"; }
                 } else {
                     const prima = ricetteProcessate[0];
-                    if (blocchi.length > 1) alert("Attenzione: avendo scelto l'anteprima, verrà pre-compilata SOLO la prima ricetta del file.");
+                    if (blocchi.length > 1) alert("Attenzione: verrà pre-compilata SOLO la prima ricetta del file.");
 
                     document.getElementById('ricetta-nome').value = prima.ricettaData.nome;
                     if (prima.ricettaData.id_categoria) document.getElementById('ricetta-categoria').value = prima.ricettaData.id_categoria;
-                    document.getElementById('ricetta-porzioni').value = prima.ricettaData.porzioni_base;
-                    document.getElementById('ricetta-unita').value = prima.ricettaData.unita_porzioni;
-                    document.getElementById('ricetta-riposo').value = prima.ricettaData.tempo_riposo_ore;
-                    document.getElementById('ricetta-cottura').value = prima.ricettaData.tempo_cottura_min;
-                    document.getElementById('ricetta-note').value = prima.ricettaData.note;
-                    document.getElementById('ricetta-fonte').value = prima.ricettaData.fonte || '';
-                    document.getElementById('ricetta-link').value = prima.ricettaData.link_fonte || '';
+                    document.getElementById('ricetta-porzioni').value = prima.ricettaData.porzioni_base; document.getElementById('ricetta-unita').value = prima.ricettaData.unita_porzioni;
+                    document.getElementById('ricetta-riposo').value = prima.ricettaData.tempo_riposo_ore; document.getElementById('ricetta-cottura').value = prima.ricettaData.tempo_cottura_min;
+                    document.getElementById('ricetta-note').value = prima.ricettaData.note; document.getElementById('ricetta-fonte').value = prima.ricettaData.fonte || ''; document.getElementById('ricetta-link').value = prima.ricettaData.link_fonte || '';
 
-                    // PARTE FONDAMENTALE: Teniamo in memoria il link dell'immagine per quando preme Salva!
                     urlImmagineInModifica = prima.ricettaData.url_immagine;
-
                     document.querySelectorAll('.checkbox-tag').forEach(chk => chk.checked = false);
                     prima.tagsSpuntati.forEach(tagId => { const cb = document.getElementById(`tag-${tagId}`); if (cb) cb.checked = true; });
 
-                    document.getElementById('container-ingredienti').innerHTML = '';
-                    document.getElementById('container-procedimento').innerHTML = '';
-                    document.getElementById('container-sottoricette').innerHTML = '';
+                    document.getElementById('container-ingredienti').innerHTML = ''; document.getElementById('container-procedimento').innerHTML = ''; document.getElementById('container-sottoricette').innerHTML = '';
 
                     prima.ingredientiData.forEach(ing => {
                         document.getElementById('btn-add-ingrediente').click();
                         const riga = document.getElementById('container-ingredienti').lastElementChild;
-                        riga.querySelector('.ing-nome').value = ing.nome; riga.querySelector('.ing-qta').value = ing.qta; riga.querySelector('.ing-unita').value = ing.unita;
+                        riga.querySelector('.ing-nome').value = ing.nome; riga.querySelector('.ing-nome').dispatchEvent(new Event('change', { bubbles: true }));
+                        riga.querySelector('.ing-qta').value = ing.qta; riga.querySelector('.ing-unita').value = ing.unita;
                     });
 
                     prima.procedimentoData.forEach(step => {
                         document.getElementById('btn-add-step').click();
                         const riga = document.getElementById('container-procedimento').lastElementChild;
-                        const txtArea = riga.querySelector('.step-desc'); txtArea.value = step.desc;
-                        setTimeout(() => { txtArea.style.height = 'auto'; txtArea.style.height = txtArea.scrollHeight + 'px'; }, 10);
+                        const txtArea = riga.querySelector('.step-desc'); txtArea.value = step.desc; setTimeout(() => { txtArea.style.height = 'auto'; txtArea.style.height = txtArea.scrollHeight + 'px'; }, 10);
                     });
 
                     prima.sottoricetteData.forEach(sr => {
                         document.getElementById('btn-add-sottoricetta').click();
                         const riga = document.getElementById('container-sottoricette').lastElementChild;
-                        const ricTrovata = ricetteDB.find(x => x.id === sr.id_figlia);
-                        riga.querySelector('.sr-nome').value = ricTrovata ? ricTrovata.nome : '';
-                        riga.querySelector('.sr-moltiplicatore').value = sr.moltiplicatore;
+                        const ricTrovata = ricetteDB.find(x => x.id === sr.id_figlia); riga.querySelector('.sr-nome').value = ricTrovata ? ricTrovata.nome : ''; riga.querySelector('.sr-moltiplicatore').value = sr.moltiplicatore;
                     });
-
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             };
@@ -408,17 +321,15 @@ async function initInserimento() {
     // ==========================================
     const btnEliminaForm = document.getElementById('btn-elimina-ricetta-form');
     if (btnEliminaForm) {
-        const nuovoBtnElimina = btnEliminaForm.cloneNode(true);
-        btnEliminaForm.parentNode.replaceChild(nuovoBtnElimina, btnEliminaForm);
-        nuovoBtnElimina.addEventListener('click', async () => {
+        btnEliminaForm.addEventListener('click', async () => {
             if (!idRicettaInModifica) return;
             if (!confirm("Sei sicuro di voler eliminare definitivamente questa ricetta dal database?")) return;
             try {
-                nuovoBtnElimina.disabled = true; nuovoBtnElimina.innerHTML = "🗑 Eliminazione in corso...";
+                btnEliminaForm.disabled = true; btnEliminaForm.innerHTML = "🗑 Eliminazione in corso...";
                 await API.deleteRicetta(idRicettaInModifica, urlImmagineInModifica);
                 alert("Ricetta eliminata con successo!");
                 idRicettaInModifica = null; urlImmagineInModifica = null; document.getElementById('nav-elenco').click();
-            } catch (err) { alert("Errore durante l'eliminazione: " + err.message); nuovoBtnElimina.disabled = false; nuovoBtnElimina.innerHTML = "🗑 Elimina"; }
+            } catch (err) { alert("Errore durante l'eliminazione: " + err.message); btnEliminaForm.disabled = false; btnEliminaForm.innerHTML = "🗑 Elimina"; }
         });
     }
 
@@ -431,78 +342,51 @@ async function initInserimento() {
         btnSubmit.disabled = true; btnSubmit.textContent = "Salvataggio in corso...";
 
         try {
-            // Usa l'immagine importata (se c'è), oppure quella già presente in modifica
             let url_immagine = urlImmagineInModifica;
-
             const fileInput = document.getElementById('ricetta-immagine');
             if (fileInput.files.length > 0) {
-                // Se l'utente carica un file a mano dal suo PC, vince questo e sovrascrive il link
                 url_immagine = await API.uploadImmagine(fileInput.files[0]);
             } else if (url_immagine && url_immagine.startsWith('http') && !url_immagine.includes('supabase.co')) {
-                // Se è un link web preso dall'importazione TXT, prova a salvarlo in cloud!
-                try {
-                    const resp = await fetch(url_immagine);
-                    const blob = await resp.blob();
-                    const file = new File([blob], `img_salvata_${Date.now()}.jpg`, { type: blob.type });
-                    url_immagine = await API.uploadImmagine(file);
-                } catch (e) {
-                    console.warn("Impossibile scaricare immagine da link, uso il link diretto.");
-                    // Mantiene url_immagine uguale al link originale
-                }
+                try { const resp = await fetch(url_immagine); const blob = await resp.blob(); const file = new File([blob], `img_salvata_${Date.now()}.jpg`, { type: blob.type }); url_immagine = await API.uploadImmagine(file); } catch (e) { console.warn("Impossibile scaricare, uso link diretto"); }
             }
 
             const idCat = document.getElementById('ricetta-categoria').value;
             const ricettaData = {
-                nome: document.getElementById('ricetta-nome').value.trim(),
-                id_categoria: idCat ? parseInt(idCat) : null,
-                porzioni_base: parseFloat(document.getElementById('ricetta-porzioni').value),
-                unita_porzioni: document.getElementById('ricetta-unita').value.trim(),
-                tempo_riposo_ore: parseFloat(document.getElementById('ricetta-riposo').value) || 0,
-                tempo_cottura_min: parseInt(document.getElementById('ricetta-cottura').value) || 0,
-                fonte: document.getElementById('ricetta-fonte')?.value.trim() || null,
-                link_fonte: document.getElementById('ricetta-link')?.value.trim() || null,
-                note: document.getElementById('ricetta-note')?.value.trim() || null,
-                url_immagine: url_immagine
+                nome: document.getElementById('ricetta-nome').value.trim(), id_categoria: idCat ? parseInt(idCat) : null,
+                porzioni_base: parseFloat(document.getElementById('ricetta-porzioni').value), unita_porzioni: document.getElementById('ricetta-unita').value.trim(),
+                tempo_riposo_ore: parseFloat(document.getElementById('ricetta-riposo').value) || 0, tempo_cottura_min: parseInt(document.getElementById('ricetta-cottura').value) || 0,
+                fonte: document.getElementById('ricetta-fonte')?.value.trim() || null, link_fonte: document.getElementById('ricetta-link')?.value.trim() || null,
+                note: document.getElementById('ricetta-note')?.value.trim() || null, url_immagine: url_immagine
             };
 
             const tagsSpuntati = Array.from(document.querySelectorAll('.checkbox-tag:checked')).map(cb => cb.value);
 
             const ingredientiData = Array.from(document.querySelectorAll('.riga-ingrediente')).map(r => ({
-                nome: r.querySelector('.ing-nome').value.trim(),
-                qta: parseFloat(r.querySelector('.ing-qta').value),
-                unita: r.querySelector('.ing-unita').value.trim()
+                nome: r.querySelector('.ing-nome').value.trim(), qta: parseFloat(r.querySelector('.ing-qta').value), unita: r.querySelector('.ing-unita').value.trim()
             })).filter(i => i.nome !== "");
 
-            const procedimentoData = Array.from(document.querySelectorAll('.riga-step')).map(r => ({
-                desc: r.querySelector('.step-desc').value.trim()
-            })).filter(s => s.desc !== "");
+            const procedimentoData = Array.from(document.querySelectorAll('.riga-step')).map(r => ({ desc: r.querySelector('.step-desc').value.trim() })).filter(s => s.desc !== "");
 
             const sottoricetteData = Array.from(document.querySelectorAll('.riga-sottoricetta')).map(r => {
                 const nomeCercato = r.querySelector('.sr-nome').value.trim();
                 const ricTrovata = ricetteDB.find(x => x.nome.toLowerCase() === nomeCercato.toLowerCase());
-                return {
-                    id_figlia: ricTrovata ? ricTrovata.id : "",
-                    moltiplicatore: parseFloat(r.querySelector('.sr-moltiplicatore').value)
-                };
+                return { id_figlia: ricTrovata ? ricTrovata.id : "", moltiplicatore: parseFloat(r.querySelector('.sr-moltiplicatore').value) };
             }).filter(sr => sr.id_figlia !== "" && !isNaN(sr.moltiplicatore));
 
-            if (idRicettaInModifica) {
-                await API.aggiornaRicettaCompleta(idRicettaInModifica, ricettaData, ingredientiData, procedimentoData, tagsSpuntati, sottoricetteData);
-                alert("Ricetta aggiornata!");
-            } else {
-                await API.salvaRicettaCompleta(ricettaData, ingredientiData, procedimentoData, tagsSpuntati, sottoricetteData);
-                alert("Nuova ricetta salvata con l'immagine!");
-            }
+            if (idRicettaInModifica) { await API.aggiornaRicettaCompleta(idRicettaInModifica, ricettaData, ingredientiData, procedimentoData, tagsSpuntati, sottoricetteData); alert("Ricetta aggiornata!"); }
+            else { await API.salvaRicettaCompleta(ricettaData, ingredientiData, procedimentoData, tagsSpuntati, sottoricetteData); alert("Nuova ricetta salvata!"); }
 
             idRicettaInModifica = null; urlImmagineInModifica = null; document.getElementById('nav-elenco').click();
 
-        } catch (error) {
-            console.error(error); alert("Errore: " + error.message);
-            btnSubmit.disabled = false; btnSubmit.innerHTML = idRicettaInModifica ? "💾 Salva Modifiche" : "💾 Salva Ricetta";
-        }
+        } catch (error) { console.error(error); alert("Errore: " + error.message); btnSubmit.disabled = false; btnSubmit.innerHTML = idRicettaInModifica ? "💾 Salva Modifiche" : "💾 Salva Ricetta"; }
     });
-}
 
+    // Avvia automaticamente il caricamento righe solo se è una Nuova Ricetta (dopo aver caricato tutti i listener)
+    if (!idRicettaInModifica) {
+        document.getElementById('btn-add-ingrediente').click();
+        document.getElementById('btn-add-step').click();
+    }
+}
 function aggiornaNumeriStep() { document.querySelectorAll('.riga-step .step-number').forEach((el, index) => el.textContent = index + 1); }
 
 // ==========================================
@@ -640,6 +524,7 @@ async function apriDettaglioRicetta(id_ricetta) {
         document.getElementById('btn-torna-elenco').addEventListener('click', () => { UI.renderElenco(); initElenco(); });
         contSotto.addEventListener('click', (e) => { if (e.target.classList.contains('btn-apri-sottoricetta')) { window.scrollTo(0, 0); apriDettaglioRicetta(e.target.getAttribute('data-id')); } });
 
+        // --- BOTTONE ELIMINA STORICO/USI ---
         const btnElimina = document.getElementById('btn-elimina-ricetta');
         if (btnElimina) btnElimina.addEventListener('click', async () => {
             try {
@@ -654,38 +539,84 @@ async function apriDettaglioRicetta(id_ricetta) {
         const btnStampa = document.getElementById('btn-stampa-ricetta');
         if (btnStampa) btnStampa.addEventListener('click', () => window.print());
 
+        // --- GESTIONE BOTTONE MODIFICA ---
         const btnModifica = document.getElementById('btn-modifica-ricetta');
-        if (btnModifica) btnModifica.addEventListener('click', async () => {
-            idRicettaInModifica = ricetta.id; urlImmagineInModifica = ricetta.url_immagine;
-            document.querySelectorAll('.nav-link, .bottom-nav-item').forEach(el => el.classList.remove('active'));
-            UI.renderInserimento(); await initInserimento();
+        if (btnModifica) {
+            btnModifica.addEventListener('click', async () => {
+                idRicettaInModifica = ricetta.id;
+                urlImmagineInModifica = ricetta.url_immagine;
 
-            document.getElementById('titolo-inserimento').textContent = "✏️ Modifica ricetta";
-            const bs = document.getElementById('btn-salva-ricetta-top'); bs.textContent = "💾 Salva modifiche"; bs.classList.replace('btn-success', 'btn-primary');
-            document.getElementById('btn-elimina-ricetta-form').classList.remove('d-none');
+                // Pulisce il menu e inizializza il form
+                document.querySelectorAll('.nav-link, .bottom-nav-item').forEach(el => el.classList.remove('active'));
+                UI.renderInserimento();
+                await initInserimento();
 
-            document.getElementById('ricetta-nome').value = ricetta.nome || '';
-            if (ricetta.categorie) Array.from(document.getElementById('ricetta-categoria').options).forEach(opt => { if (opt.text === ricetta.categorie.nome) opt.selected = true; });
-            document.getElementById('ricetta-porzioni').value = ricetta.porzioni_base || ''; document.getElementById('ricetta-unita').value = ricetta.unita_porzioni || '';
-            document.getElementById('ricetta-riposo').value = ricetta.tempo_riposo_ore || 0; document.getElementById('ricetta-cottura').value = ricetta.tempo_cottura_min || 0;
-            document.getElementById('ricetta-fonte').value = ricetta.fonte || ''; document.getElementById('ricetta-link').value = ricetta.link_fonte || ''; document.getElementById('ricetta-note').value = ricetta.note || '';
+                // 1. PRECOMPILA DATI GENERALI
+                document.getElementById('ricetta-nome').value = ricetta.nome;
+                if (ricetta.id_categoria) document.getElementById('ricetta-categoria').value = ricetta.id_categoria;
+                document.getElementById('ricetta-porzioni').value = ricetta.porzioni_base;
+                document.getElementById('ricetta-unita').value = ricetta.unita_porzioni;
+                document.getElementById('ricetta-riposo').value = ricetta.tempo_riposo_ore;
+                document.getElementById('ricetta-cottura').value = ricetta.tempo_cottura_min;
+                document.getElementById('ricetta-note').value = ricetta.note || '';
+                document.getElementById('ricetta-fonte').value = ricetta.fonte || '';
+                document.getElementById('ricetta-link').value = ricetta.link_fonte || '';
 
-            if (ricetta.ricette_tags) { const n = ricetta.ricette_tags.map(rt => rt.tag.nome); document.querySelectorAll('.checkbox-tag').forEach(chk => { if (n.includes(chk.nextElementSibling.textContent)) chk.checked = true; }); }
+                // Tags
+                document.querySelectorAll('.checkbox-tag').forEach(chk => chk.checked = false);
+                if (ricetta.tags) {
+                    ricetta.tags.forEach(t => { const cb = document.getElementById(`tag-${t.id_tag || t.id}`); if (cb) cb.checked = true; });
+                }
 
-            const cIng = document.getElementById('container-ingredienti'); const cProc = document.getElementById('container-procedimento'); const cSr = document.getElementById('container-sottoricette');
-            cIng.innerHTML = ''; cProc.innerHTML = ''; cSr.innerHTML = '';
+                // Svuota i contenitori prima di riempirli
+                document.getElementById('container-ingredienti').innerHTML = '';
+                document.getElementById('container-procedimento').innerHTML = '';
+                document.getElementById('container-sottoricette').innerHTML = '';
 
-            ricetta.ingredienti?.forEach(ing => { document.getElementById('btn-add-ingrediente').click(); const r = cIng.lastElementChild; r.querySelector('.ing-nome').value = ing.nome_ingrediente; r.querySelector('.ing-qta').value = ing.quantita; r.querySelector('.ing-unita').value = ing.unita_distinta || ''; });
-            ricetta.procedimento?.forEach(step => { document.getElementById('btn-add-step').click(); const r = cProc.lastElementChild; const t = r.querySelector('.step-desc'); t.value = step.descrizione; setTimeout(() => t.style.height = t.scrollHeight + 'px', 10); });
-            ricetta.sottoricette_esplose?.forEach(sr => {
-                document.getElementById('btn-add-sottoricetta').click();
-                const r = cSr.lastElementChild;
-                r.querySelector('.sr-nome').value = sr.ricetta_figlia.nome;
-                r.querySelector('.sr-moltiplicatore').value = sr.moltiplicatore;
-            }); window.scrollTo(0, 0);
-        });
+                // 2. PRECOMPILA INGREDIENTI
+                if (ricetta.ingredienti) {
+                    ricetta.ingredienti.forEach(ing => {
+                        document.getElementById('btn-add-ingrediente').click();
+                        const riga = document.getElementById('container-ingredienti').lastElementChild;
+                        riga.querySelector('.ing-nome').value = ing.nome_ingrediente || ing.nome;
+                        // Simula il click per far aggiornare le unità di misura!
+                        riga.querySelector('.ing-nome').dispatchEvent(new Event('change', { bubbles: true }));
+                        riga.querySelector('.ing-qta').value = ing.quantita || ing.qta;
+                        riga.querySelector('.ing-unita').value = ing.unita_distinta || ing.unita_misura || ing.unita || '';
+                    });
+                }
 
-    } catch (error) { UI.container.innerHTML = `<div class="alert alert-danger">Errore db.</div>`; }
+                // 3. PRECOMPILA PROCEDIMENTO
+                if (ricetta.procedimento) {
+                    ricetta.procedimento.forEach(step => {
+                        document.getElementById('btn-add-step').click();
+                        const riga = document.getElementById('container-procedimento').lastElementChild;
+                        const txtArea = riga.querySelector('.step-desc');
+                        txtArea.value = step.descrizione || step.desc;
+                        setTimeout(() => { txtArea.style.height = 'auto'; txtArea.style.height = txtArea.scrollHeight + 'px'; }, 10);
+                    });
+                }
+
+                // 4. PRECOMPILA SOTTORICETTE
+                if (ricetta.sottoricette_esplose || ricetta.sottoricette) {
+                    const srArray = ricetta.sottoricette_esplose || ricetta.sottoricette;
+                    srArray.forEach(sr => {
+                        document.getElementById('btn-add-sottoricetta').click();
+                        const riga = document.getElementById('container-sottoricette').lastElementChild;
+                        riga.querySelector('.sr-nome').value = sr.ricetta_figlia ? sr.ricetta_figlia.nome : sr.nome;
+                        riga.querySelector('.sr-moltiplicatore').value = sr.moltiplicatore;
+                    });
+                }
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+    } catch (error) {
+        // 👇 ADESSO TI STAMPA IL VERO ERRORE SIA NELLA CONSOLE CHE A SCHERMO
+        console.error("Errore critico in apriDettaglioRicetta:", error);
+        UI.container.innerHTML = `<div class="alert alert-danger m-4"><strong>Errore di caricamento:</strong> ${error.message}</div>`;
+    }
 }
 
 let wakeLockCucina = null;
@@ -801,16 +732,41 @@ async function initCalendario() {
             if (!e.target.value) return; cDet.innerHTML = '<div class="spinner-border spinner-border-sm text-success"></div>';
             try {
                 rSelCom = await API.getRicettaCompleta(e.target.value);
-                const genBlocco = (id, nome, porzioni, unita, isSr) => `<div class="card border-${isSr ? 'warning' : 'primary'} mb-3 riga-produzione-item" data-id="${id}"><div class="card-header bg-${isSr ? 'warning text-dark' : 'primary text-white'} py-2 fw-bold">${isSr ? '↳ Sottoricetta:' : 'Principale:'} ${nome}</div><div class="card-body py-2"><div class="row align-items-center mb-2"><div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input check-porzioni-modificate" type="checkbox" id="cm-${id}"><label class="form-check-label small" for="cm-${id}">Modifica porzioni?</label></div></div><div class="col-md-8"><div class="stepper-group contenitore-input-porzioni d-none w-100 shadow-sm mt-2">
-            <span class="bg-light text-muted small px-2 border-end d-flex align-items-center">Prodotte:</span>
-            <button type="button" class="stepper-btn px-2" tabindex="-1" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">−</button>
-            <input type="number" step="0.1" class="form-control stepper-input input-porzioni-reali px-0" value="${porzioniBase}" data-base="${porzioniBase}">
-            <button type="button" class="stepper-btn px-2" tabindex="-1" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">+</button>
-            <span class="bg-light text-muted small px-2 border-start d-flex align-items-center">${unita}</span>
-        </div></div>`;
-                cDet.innerHTML = genBlocco(rSelCom.id, rSelCom.nome, rSelCom.porzioni_base, rSelCom.unita_porzioni, false) + (rSelCom.sottoricette_esplose?.map(sr => genBlocco(sr.ricetta_figlia.id, sr.ricetta_figlia.nome, sr.ricetta_figlia.porzioni_base, sr.ricetta_figlia.unita_porzioni, true)).join('') || '');
+                const genBlocco = (id, nome, porzioni, unita, isSr, noteAttuali) => `
+                <div class="card border-${isSr ? 'warning' : 'primary'} mb-3 riga-produzione-item" data-id="${id}">
+                    <div class="card-header bg-${isSr ? 'warning text-dark' : 'primary text-white'} py-2 fw-bold">
+                        ${isSr ? '↳ Sottoricetta:' : 'Principale:'} ${nome}
+                    </div>
+                    <div class="card-body py-2">
+                        <div class="row align-items-center mb-2">
+                            <div class="col-md-4">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input check-porzioni-modificate" type="checkbox" id="cm-${id}">
+                                    <label class="form-check-label small" for="cm-${id}">Modifica porzioni?</label>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="stepper-group contenitore-input-porzioni d-none w-100 shadow-sm mt-2">
+                                    <span class="bg-light text-muted small px-2 border-end d-flex align-items-center">Prodotte:</span>
+                                    <button type="button" class="stepper-btn px-2" tabindex="-1" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">−</button>
+                                    <input type="number" step="0.1" class="form-control stepper-input input-porzioni-reali px-0" value="${porzioni}" data-base="${porzioni}">
+                                    <button type="button" class="stepper-btn px-2" tabindex="-1" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">+</button>
+                                    <span class="bg-light text-muted small px-2 border-start d-flex align-items-center">${unita}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <input type="text" class="form-control input-note-produzione form-control-sm" placeholder="Aggiungi note (es. Torta Mario)">
+                            <input type="hidden" class="vecchie-note-nascoste" value="${noteAttuali || ''}">
+                        </div>
+                    </div>
+                </div>`;
+
+                cDet.innerHTML = genBlocco(rSelCom.id, rSelCom.nome, rSelCom.porzioni_base, rSelCom.unita_porzioni, false, rSelCom.note) +
+                    (rSelCom.sottoricette_esplose?.map(sr => genBlocco(sr.ricetta_figlia.id, sr.ricetta_figlia.nome, sr.ricetta_figlia.porzioni_base, sr.ricetta_figlia.unita_porzioni, true, sr.ricetta_figlia.note)).join('') || '');
+
                 cDet.querySelectorAll('.check-porzioni-modificate').forEach(chk => chk.addEventListener('change', (ev) => ev.target.checked ? ev.target.closest('.card-body').querySelector('.contenitore-input-porzioni').classList.remove('d-none') : ev.target.closest('.card-body').querySelector('.contenitore-input-porzioni').classList.add('d-none')));
-            } catch (err) { cDet.innerHTML = `<div class="alert alert-danger">Errore db.</div>`; }
+            } catch (err) { cDet.innerHTML = `<div class="alert alert-danger">Errore db: ${err.message}</div>`; }
         });
 
         document.getElementById('form-produzione').addEventListener('submit', async (e) => {
@@ -821,15 +777,22 @@ async function initCalendario() {
                 document.querySelectorAll('.riga-produzione-item').forEach(b => {
                     const idR = b.getAttribute('data-id'), vInp = b.querySelector('.input-porzioni-reali');
                     prodSalvare.push({ id_ricetta: idR, data_svolgimento: dataSv, porzioni_prodotte: b.querySelector('.check-porzioni-modificate').checked ? parseFloat(vInp.value) : parseFloat(vInp.getAttribute('data-base')) });
-                    const noteNuove = b.querySelector('.input-note-produzione').value.trim();
-                    if (noteNuove !== "") noteAgg.push({ id_ricetta: idR, note_finali: (b.querySelector('.vecchie-note-nascoste').value ? b.querySelector('.vecchie-note-nascoste').value + `\n\n--- Note ${dataIt} ---\n${noteNuove}` : `--- Note ${dataIt} ---\n${noteNuove}`).trim() });
+
+                    const notaInput = b.querySelector('.input-note-produzione');
+                    const noteNuove = notaInput ? notaInput.value.trim() : "";
+
+                    if (noteNuove !== "") {
+                        const vecchieNote = b.querySelector('.vecchie-note-nascoste') ? b.querySelector('.vecchie-note-nascoste').value : "";
+                        noteAgg.push({ id_ricetta: idR, note_finali: (vecchieNote ? vecchieNote + `\n\n--- Note ${dataIt} ---\n${noteNuove}` : `--- Note ${dataIt} ---\n${noteNuove}`).trim() });
+                    }
                 });
-                await API.registraProduzione(prodSalvare, noteAgg); alert("Registrata!");
+                await API.registraProduzione(prodSalvare, noteAgg); alert("Produzione Registrata!");
                 fCont.classList.add('d-none'); document.getElementById('form-produzione').reset(); document.getElementById('prod-dettagli-dinamici').innerHTML = '';
                 storico = await API.getStorico(); aggiornaStatistiche(); renderVista();
-            } catch (err) { alert("Errore: " + err.message); btn.disabled = false; btn.textContent = "Salva"; }
+                btn.disabled = false; btn.textContent = "Salva nel Calendario";
+            } catch (err) { alert("Errore durante il salvataggio: " + err.message); btn.disabled = false; btn.textContent = "Salva nel Calendario"; }
         });
-    } catch (error) { UI.container.innerHTML = `<div class="alert alert-danger">Errore calendario.</div>`; }
+    } catch (error) { UI.container.innerHTML = `<div class="alert alert-danger">Errore calendario: ${error.message}</div>`; }
 }
 
 // ==========================================
