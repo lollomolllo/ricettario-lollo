@@ -616,8 +616,22 @@ async function apriDettaglioRicetta(id_ricetta) {
 
                 // Tags
                 document.querySelectorAll('.checkbox-tag').forEach(chk => chk.checked = false);
-                if (ricetta.tags) {
-                    ricetta.tags.forEach(t => { const cb = document.getElementById(`tag-${t.id_tag || t.id}`); if (cb) cb.checked = true; });
+                if (ricetta.ricette_tags) {
+                    ricetta.ricette_tags.forEach(rt => {
+                        // Proviamo a rimettere la spunta usando l'ID
+                        if (rt.id_tag) {
+                            const cb = document.getElementById(`tag-${rt.id_tag}`);
+                            if (cb) cb.checked = true;
+                        } else if (rt.tag && rt.tag.nome) {
+                            // Se l'ID non c'è, lo cerchiamo intelligentemente per nome!
+                            const labels = Array.from(document.querySelectorAll('.form-check-label'));
+                            const labelTrovata = labels.find(l => l.textContent.trim().toLowerCase() === rt.tag.nome.toLowerCase());
+                            if (labelTrovata) {
+                                const cb = document.getElementById(labelTrovata.getAttribute('for'));
+                                if (cb) cb.checked = true;
+                            }
+                        }
+                    });
                 }
 
                 // Svuota i contenitori prima di riempirli
