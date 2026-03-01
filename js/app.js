@@ -122,6 +122,22 @@ async function initImpostazioni() {
     document.getElementById('lista-categorie').addEventListener('click', async (e) => { if (e.target.classList.contains('btn-delete-categoria') && confirm('Sicuro?')) { await API.deleteCategoria(e.target.getAttribute('data-id')); await loadDizionari(); } });
     document.getElementById('lista-tag').addEventListener('click', async (e) => { if (e.target.classList.contains('btn-delete-tag') && confirm('Sicuro?')) { await API.deleteTag(e.target.getAttribute('data-id')); await loadDizionari(); } });
     document.getElementById('lista-ingredienti-diz').addEventListener('click', async (e) => { if (e.target.classList.contains('btn-delete-ingrediente-diz') && confirm('Vuoi eliminare questo ingrediente dal dizionario centrale?')) { await API.deleteIngredienteDizionario(e.target.getAttribute('data-id')); await loadDizionari(); } });
+
+    // --- GESTIONE MANUALE D'USO ---
+    const btnApriManuale = document.getElementById('btn-apri-manuale');
+    if (btnApriManuale) {
+        btnApriManuale.addEventListener('click', () => {
+            UI.renderManuale(); // Disegna la schermata del manuale
+            window.scrollTo(0, 0);
+
+            // Attiva il bottone per tornare indietro
+            document.getElementById('btn-chiudi-manuale').addEventListener('click', () => {
+                UI.renderImpostazioni();
+                initImpostazioni();
+            });
+        });
+    }
+
 }
 // ==========================================
 // 2. INSERIMENTO E MODIFICA (Form)
