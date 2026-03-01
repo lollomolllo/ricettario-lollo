@@ -945,11 +945,21 @@ async function initSpesa() {
     // 3. CAMBIO RICETTA NELLA TENDINA
     selectRicetta.addEventListener('change', async (e) => {
         if (!e.target.value) { btnAggiungi.disabled = true; inputPorzioni.value = ''; return; }
-        btnAggiungi.disabled = true; inputPorzioni.value = "Caricamento...";
+
+        btnAggiungi.disabled = true;
+        inputPorzioni.value = ''; // Svuotiamo il campo numerico
+        btnAggiungi.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Caricamento...'; // Lo scriviamo sul bottone!
+
         try {
             const ric = await API.getRicettaCompleta(e.target.value);
-            inputPorzioni.value = ric.porzioni_base || 1; btnAggiungi.disabled = false;
-        } catch (err) { inputPorzioni.value = ''; alert("Impossibile caricare i dettagli."); }
+            inputPorzioni.value = ric.porzioni_base || 1;
+            btnAggiungi.disabled = false;
+            btnAggiungi.innerHTML = '➕ Aggiungi alla spesa'; // Ripristiniamo il bottone
+        } catch (err) {
+            inputPorzioni.value = '';
+            btnAggiungi.innerHTML = '➕ Aggiungi alla spesa';
+            alert("Impossibile caricare i dettagli della ricetta.");
+        }
     });
 
     // 4. FUNZIONE DI SALVATAGGIO AUTOMATICO
@@ -1032,28 +1042,30 @@ async function initSpesa() {
 
         try {
             const ricetta = await API.getRicettaCompleta(idRicetta);
-            const rapporto = porzioniRichieste / ricetta.porzioni_base;
+            const rapporto = porzioniRichieste / (ricetta.porzioni_base || 1);
             let ingredientiEstratti = [];
 
-            ricetta.ingredienti.forEach(ing => {
-                ingredientiEstratti.push({ nome: ing.nome_ingrediente, unita: ing.unita_distinta, qta: ing.quantita * rapporto });
-            });
-
-            if (ric.ingredienti) {
-                ric.ingredienti.forEach(ing => {
-                    if (ing.unita_distinta === 'SEZIONE') return; // <-- SALTA LE SEZIONI
-                    const key = `${ing.nome_ingrediente}|${ing.unita_distinta}`;
-                    ingredientiTotali[key] = (ingredientiTotali[key] || 0) + (ing.quantita * rapporto);
+            // Protezione aggiunta: controlliamo se ci sono ingredienti
+            if (ricetta.ingredienti) {
+                ricetta.ingredienti.forEach(ing => {
+                    // Ignora le sezioni visive ("--- Per la base ---")
+                    if (ing.unita_distinta === 'SEZIONE') return;
+                    ingredientiEstratti.push({ nome: ing.nome_ingrediente, unita: ing.unita_distinta, qta: ing.quantita * rapporto });
                 });
             }
-            if (ric.sottoricette_esplose) {
-                ric.sottoricette_esplose.forEach(sr => {
-                    if (!sr.ricetta_figlia || !sr.ricetta_figlia.ingredienti) return;
-                    const rapSr = rapporto * (sr.moltiplicatore || 1);
-                    sr.ricetta_figlia.ingredienti.forEach(si => {
-                        if (si.unita_distinta === 'SEZIONE') return; // <-- SALTA LE SEZIONI
-                        const key = `${si.nome_ingrediente}|${si.unita_distinta}`;
-                        ingredientiTotali[key] = (ingredientiTotali[key] || 0) + (si.quantita * rapSr);
+
+            // Protezione aggiunta: controlliamo le sottoricette
+            if (ricetta.sottoricette_esplose && ricetta.sottoricette_esplose.length > 0) {
+                ricetta.sottoricette_esplose.forEach(sr => {
+                    const rFiglia = sr.ricetta_figlia;
+                    if (!rFiglia || !rFiglia.ingredienti) return; // Se la sottoricetta è vuota, salta
+
+                    const moltiplicatoreReale = parseFloat(sr.moltiplicatore) || 1;
+                    const rapportoSotto = rapporto * moltiplicatoreReale;
+
+                    rFiglia.ingredienti.forEach(subIng => {
+                        if (subIng.unita_distinta === 'SEZIONE') return;
+                        ingredientiEstratti.push({ nome: subIng.nome_ingrediente, unita: subIng.unita_distinta, qta: subIng.quantita * rapportoSotto });
                     });
                 });
             }
@@ -1064,12 +1076,13 @@ async function initSpesa() {
             statoSpesa.spunte = {}; // Resetta le spunte se si aggiunge nuova roba
 
             selectRicetta.value = ''; inputPorzioni.value = '';
-            btnAggiungi.disabled = true; btnAggiungi.innerHTML = '➕ Aggiungi alla Spesa';
+            btnAggiungi.disabled = true; btnAggiungi.innerHTML = '➕ Aggiungi alla spesa';
 
             renderDatiSpesa();
         } catch (e) {
+            console.error(e);
             alert("Errore nell'estrazione della distinta base.");
-            btnAggiungi.disabled = false; btnAggiungi.innerHTML = '➕ Aggiungi alla Spesa';
+            btnAggiungi.disabled = false; btnAggiungi.innerHTML = '➕ Aggiungi alla spesa';
         }
     });
 
