@@ -1011,16 +1011,21 @@ async function initSpesa() {
         } else {
             listaAggregata.innerHTML = ingredientiAggregati.map(ing => {
                 const isChecked = statoSpesa.spunte[ing.key] ? 'checked' : '';
+
+                // Variabili di stile dinamiche in base alla spunta
+                const liBgClass = isChecked ? 'bg-light opacity-50' : 'bg-white';
                 const textClass = isChecked ? 'text-decoration-line-through text-muted' : 'fw-bold text-dark';
+                const badgeClass = isChecked ? 'bg-secondary text-decoration-line-through' : 'bg-success shadow-sm';
+
                 const qtaArrotondata = Number(ing.qta.toFixed(2));
 
                 return `
-                <li class="list-group-item d-flex align-items-center py-3 border-bottom">
+                <li class="list-group-item d-flex align-items-center py-3 border-bottom ${liBgClass}" style="transition: all 0.2s ease-in-out;">
                     <input class="form-check-input me-3 check-ingrediente shadow-sm" style="transform: scale(1.4);" type="checkbox" data-key="${ing.key}" ${isChecked}>
                     <div class="flex-grow-1 ${textClass} fs-5 label-ingrediente">
                         ${ing.nome}
                     </div>
-                    <div class="badge bg-success rounded-pill fs-6 px-3 py-2 shadow-sm">
+                    <div class="badge ${badgeClass} rounded-pill fs-6 px-3 py-2">
                         ${qtaArrotondata} ${ing.unita}
                     </div>
                 </li>`;
