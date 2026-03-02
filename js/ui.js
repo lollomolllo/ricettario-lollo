@@ -684,16 +684,15 @@ const UI = {
             ricetta.procedimento.forEach(step => {
                 const testo = step.descrizione || '';
                 if (testo.startsWith('---') && testo.endsWith('---')) {
-                    stepHTML += `<h4 class="mt-4 mb-3 text-primary fw-bold border-bottom border-primary pb-2">${testo.replace(/---/g, '').trim()}</h4>`;
+                    stepHTML += `<h5 class="mt-4 mb-2 text-primary fw-bold border-bottom border-primary pb-1">🗂️ ${testo.replace(/---/g, '').trim()}</h5>`;
                 } else {
+                    // Allineamento centrato, pallino più elegante e rientranze corrette
                     stepHTML += `
-                        <div class="d-flex mb-3 align-items-start">
-                            <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-3 flex-shrink-0 mt-1" style="width: 35px; height: 35px; font-weight: bold;">
+                        <div class="d-flex mb-3 align-items-center">
+                            <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-3 flex-shrink-0 shadow-sm" style="width: 30px; height: 30px; font-weight: bold; font-size: 0.95rem;">
                                 ${stepCount++}
                             </div>
-                            <div class="bg-light p-3 rounded flex-grow-1 shadow-sm border" style="white-space: pre-wrap;">
-                                ${testo}
-                            </div>
+                            <div class="bg-light py-2 px-3 rounded flex-grow-1 shadow-sm border" style="white-space: pre-line; line-height: 1.5; margin: 0;">${testo.trim()}</div>
                         </div>
                     `;
                 }
