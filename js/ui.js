@@ -701,16 +701,17 @@ const UI = {
         }
 
         this.container.innerHTML = `
-            <div class="mb-3 d-flex justify-content-between align-items-center d-print-none">
-                <button class="btn btn-outline-secondary btn-sm" id="btn-torna-elenco">← Torna alla Galleria</button>
-                <div>
-                    <button class="btn btn-warning btn-sm shadow-sm me-2 fw-bold" id="btn-cucina-ricetta">
-                        🧑‍🍳 Modalità Cucina
+            <div class="mb-4 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 d-print-none">
+                <button class="btn btn-outline-secondary btn-sm shadow-sm" id="btn-torna-elenco">← Torna alla Galleria</button>
+                
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-warning btn-sm shadow-sm fw-bold" id="btn-cucina-ricetta">
+                        🧑‍🍳 Cucina
                     </button>
-                    <button class="btn btn-outline-success btn-sm shadow-sm me-2" id="btn-stampa-ricetta">
-                        🖨️ Stampa / PDF
+                    <button class="btn btn-outline-success btn-sm shadow-sm" id="btn-stampa-ricetta">
+                        🖨️ Stampa
                     </button>
-                    <button class="btn btn-outline-primary btn-sm shadow-sm me-2" id="btn-modifica-ricetta" data-id="${ricetta.id}">
+                    <button class="btn btn-outline-primary btn-sm shadow-sm" id="btn-modifica-ricetta" data-id="${ricetta.id}">
                         ✏️ Modifica
                     </button>
                     <button class="btn btn-outline-danger btn-sm shadow-sm" id="btn-elimina-ricetta" data-id="${ricetta.id}" data-img="${ricetta.url_immagine || ''}">
