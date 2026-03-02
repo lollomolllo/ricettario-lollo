@@ -81,8 +81,7 @@ const UI = {
             html += '<div class="row g-3">';
             ricette.forEach(r => {
                 const catNome = r.categorie ? r.categorie.nome : 'Senza categoria';
-                const imgUrl = r.url_immagine || 'https://via.placeholder.com/400x300?text=Nessuna+Immagine';
-
+                const imgUrl = r.url_immagine || 'https://placehold.co/400x300?text=Nessuna+Immagine';
                 if (viewMode === 'compact') {
                     // Vista super compatta
                     html += `
@@ -164,8 +163,7 @@ const UI = {
             `;
 
             ricetteCategoria.forEach(r => {
-                const imgUrl = r.url_immagine || 'https://via.placeholder.com/400x300?text=Nessuna+Immagine';
-
+                const imgUrl = r.url_immagine || 'https://placehold.co/400x300?text=Nessuna+Immagine';
                 if (viewMode === 'compact') {
                     // Vista super compatta nei cassetti
                     html += `
@@ -483,8 +481,10 @@ const UI = {
                     <div id="collapse-procedimento" class="collapse show">
                         <div class="card-body bg-white pt-4">
                             <div id="container-procedimento"></div>
-                            <button type="button" class="btn btn-sm btn-outline-primary mt-3 fw-bold shadow-sm" id="btn-add-step">➕ Aggiungi step</button>
-                        </div>
+<div class="d-flex gap-2 mt-3">
+                                <button type="button" class="btn btn-sm btn-outline-info fw-bold shadow-sm" id="btn-add-sezione-step">🗂️ Aggiungi Sezione</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm" id="btn-add-step">➕ Aggiungi passaggio</button>
+                            </div>                        </div>
                     </div>
                 </div>
 
@@ -572,30 +572,32 @@ const UI = {
         ingredienti.forEach(ing => lista.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center"><span><strong>${ing.nome}</strong> <span class="text-muted small ms-2">(Unità ammesse: ${ing.unita_misura})</span></span><button class="btn btn-sm btn-outline-danger btn-delete-ingrediente-diz" data-id="${ing.id}">✖</button></li>`);
     },
 
-    getIngredienteRowHTML: function (opzioniIngredientiHtml = '<option value="">Caricamento...</option>') {
+    getIngredienteRowHTML: function (opzioniHtml = '<option value="">Caricamento...</option>') {
         return `
-            <div class="row align-items-center mb-2 riga-ingrediente">
-                <div class="col-md-5 mb-2 mb-md-0">
-                    <select class="form-select ing-nome fw-bold" required>
-                        ${opzioniIngredientiHtml}
+            <div class="row mb-2 riga-ingrediente align-items-end mt-2">
+                <div class="col-md-5 mb-2 mb-md-0 d-flex align-items-center gap-2">
+                    <span class="drag-handle text-muted" style="cursor: grab; font-size: 1.5rem; line-height: 1;" title="Trascina">⋮⋮</span>
+                    <select class="form-select ing-nome" required>
+                        ${opzioniHtml}
                     </select>
                 </div>
                 <div class="col-md-3 mb-2 mb-md-0">
                     <div class="stepper-group shadow-sm">
-                        <button type="button" class="stepper-btn px-2" tabindex="-1" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">−</button>
-                        <input type="number" step="0.1" class="form-control stepper-input ing-qta px-0" placeholder="Q.tà" required>
-                        <button type="button" class="stepper-btn px-2" tabindex="-1" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">+</button>
+                        <button type="button" class="stepper-btn" tabindex="-1" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('change', {bubbles: true}))">−</button>
+                        <input type="number" step="0.1" class="form-control stepper-input ing-qta" required>
+                        <button type="button" class="stepper-btn" tabindex="-1" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('change', {bubbles: true}))">+</button>
                     </div>
                 </div>
-                <div class="col-md-2 mb-2 mb-md-0">
-                    <select class="form-select ing-unita text-muted bg-light" required>
-                        <option value="">-- Unità --</option>
+                <div class="col-md-3 mb-2 mb-md-0">
+                    <select class="form-select ing-unita" required>
+                        <option value="g">g</option>
+                        <option value="ml">ml</option>
+                        <option value="pz">pz</option>
+                        <option value="q.b.">q.b.</option>
                     </select>
                 </div>
-                <div class="col-md-2 text-end d-flex justify-content-end gap-1">
-                    <button type="button" class="btn btn-outline-secondary btn-sm btn-move-up" tabindex="-1" title="Sposta su">↑</button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm btn-move-down" tabindex="-1" title="Sposta giù">↓</button>
-                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row" tabindex="-1" title="Elimina">✖</button>
+                <div class="col-md-1 text-end">
+                    <button type="button" class="btn btn-outline-danger btn-remove-row" tabindex="-1">✖</button>
                 </div>
             </div>
         `;
@@ -604,12 +606,11 @@ const UI = {
     getSezioneRowHTML: function () {
         return `
             <div class="row align-items-center mb-2 riga-sezione-ing mt-3">
-                <div class="col-md-10 mb-2 mb-md-0">
+                <div class="col-md-10 mb-2 mb-md-0 d-flex align-items-center gap-2">
+                    <span class="drag-handle text-muted" style="cursor: grab; font-size: 1.5rem; line-height: 1;" title="Trascina">⋮⋮</span>
                     <input type="text" class="form-control fw-bold bg-light text-primary titolo-sezione border-info" placeholder="Es. Per la Base Sacher..." required>
                 </div>
-                <div class="col-md-2 text-end d-flex justify-content-end gap-1">
-                    <button type="button" class="btn btn-outline-secondary btn-sm btn-move-up" tabindex="-1" title="Sposta su">↑</button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm btn-move-down" tabindex="-1" title="Sposta giù">↓</button>
+                <div class="col-md-2 text-end">
                     <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row" tabindex="-1" title="Elimina">✖</button>
                 </div>
             </div>
@@ -641,14 +642,29 @@ const UI = {
 
     getStepRowHTML: function () {
         return `
-            <div class="row mb-2 riga-step align-items-start mt-3">
-                <div class="col-md-1 text-center bg-light border rounded py-2 fw-bold step-number">#</div>
-                <div class="col-md-9">
-                    <textarea class="form-control step-desc" rows="1" style="overflow-y: hidden; resize: none;" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px';" required></textarea>
+            <div class="row mb-3 riga-step align-items-start mt-2">
+                <div class="col-md-11 mb-2 mb-md-0 d-flex gap-2 align-items-start">
+                    <span class="drag-handle-step text-muted mt-2" style="cursor: grab; font-size: 1.5rem; line-height: 1;" title="Trascina">⋮⋮</span>
+                    <div class="input-group shadow-sm">
+                        <span class="input-group-text bg-light text-muted fw-bold step-numero">1</span>
+                        <textarea class="form-control step-desc" rows="2" placeholder="Descrivi il passaggio..." required></textarea>
+                    </div>
                 </div>
-                <div class="col-md-2 text-end d-flex justify-content-end gap-1">
-                    <button type="button" class="btn btn-outline-secondary btn-sm btn-move-up" tabindex="-1" title="Sposta su">↑</button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm btn-move-down" tabindex="-1" title="Sposta giù">↓</button>
+                <div class="col-md-1 text-end mt-1">
+                    <button type="button" class="btn btn-outline-danger btn-remove-row" tabindex="-1">✖</button>
+                </div>
+            </div>
+        `;
+    },
+
+    getSezioneStepRowHTML: function () {
+        return `
+            <div class="row align-items-center mb-3 riga-sezione-step mt-4">
+                <div class="col-md-11 mb-2 mb-md-0 d-flex align-items-center gap-2">
+                    <span class="drag-handle-step text-muted" style="cursor: grab; font-size: 1.5rem; line-height: 1;" title="Trascina">⋮⋮</span>
+                    <input type="text" class="form-control fw-bold bg-light text-primary titolo-sezione-step border-info" placeholder="Es. Preparazione della Base..." required>
+                </div>
+                <div class="col-md-1 text-end">
                     <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row" tabindex="-1" title="Elimina">✖</button>
                 </div>
             </div>
@@ -659,23 +675,30 @@ const UI = {
 
     renderDettaglio: function (ricetta) {
         const catNome = ricetta.categorie ? ricetta.categorie.nome : 'Senza categoria';
-        const imgUrl = ricetta.url_immagine || 'https://via.placeholder.com/800x400?text=Nessuna+Immagine';
-        const tagsHTML = ricetta.ricette_tags.map(rt => `<span class="badge bg-secondary me-1">${rt.tag.nome}</span>`).join('');
+        const imgUrl = ricetta.url_immagine || 'https://placehold.co/800x400?text=Nessuna+Immagine'; const tagsHTML = ricetta.ricette_tags.map(rt => `<span class="badge bg-secondary me-1">${rt.tag.nome}</span>`).join('');
 
         // Costruiamo la lista degli Step del procedimento
         let stepHTML = '';
-        ricetta.procedimento.forEach(step => {
-            stepHTML += `
-                <div class="d-flex mb-3">
-                    <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-3 flex-shrink-0" style="width: 35px; height: 35px; font-weight: bold;">
-                        ${step.step_num}
-                    </div>
-                    <div class="bg-light p-3 rounded flex-grow-1 shadow-sm border">
-                        ${step.descrizione}
-                    </div>
-                </div>
-            `;
-        });
+        let stepCount = 1; // Contatore manuale per ignorare le sezioni
+        if (ricetta.procedimento) {
+            ricetta.procedimento.forEach(step => {
+                const testo = step.descrizione || '';
+                if (testo.startsWith('---') && testo.endsWith('---')) {
+                    stepHTML += `<h4 class="mt-4 mb-3 text-primary fw-bold border-bottom border-primary pb-2">${testo.replace(/---/g, '').trim()}</h4>`;
+                } else {
+                    stepHTML += `
+                        <div class="d-flex mb-3 align-items-start">
+                            <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-3 flex-shrink-0 mt-1" style="width: 35px; height: 35px; font-weight: bold;">
+                                ${stepCount++}
+                            </div>
+                            <div class="bg-light p-3 rounded flex-grow-1 shadow-sm border" style="white-space: pre-wrap;">
+                                ${testo}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+        }
 
         this.container.innerHTML = `
             <div class="mb-3 d-flex justify-content-between align-items-center d-print-none">
