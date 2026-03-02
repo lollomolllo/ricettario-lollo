@@ -24,6 +24,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnApplica = document.getElementById('btn-applica-teglia');
     let currentMultiplier = 1;
 
+    // --- ATTIVAZIONE APP NATIVA (PWA) ---
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js')
+            .then(() => console.log('🔧 Motore App Nativa avviato!'))
+            .catch((err) => console.error('Errore avvio App Nativa:', err));
+    }
+
     // Mostra/nasconde i campi (Diametro vs Lati) in base alla forma scelta
     const aggiornaVistaTeglie = () => {
         document.getElementById('calc-inputs-orig-tonda').classList.toggle('d-none', formaOrig.value !== 'tonda');
@@ -837,7 +844,7 @@ async function initElenco() {
     try {
         const [ricette, categorie, tags] = await Promise.all([API.getRicetteGalleria(), API.getCategorie(), API.getTags()]);
         let cacheRicette = ricette;
-
+        let ricetteAttualiFiltrate = ricette;
         const prefs = getPrefs();
         let currentView = prefs.defaultView || 'grid';
         let isGrouped = prefs.defaultGrouped !== false; // <-- Legge l'impostazione salvata!
@@ -896,7 +903,7 @@ async function initElenco() {
 
             // Ordine alfabetico forzato
             filtrate.sort((a, b) => a.nome.localeCompare(b.nome));
-
+            ricetteAttualiFiltrate = filtrate; // Salva le ricette attualmente a schermo
             const badgeTotale = document.getElementById('badge-totale-ricette');
             if (badgeTotale) badgeTotale.textContent = filtrate.length;
 
@@ -925,6 +932,37 @@ async function initElenco() {
         document.getElementById('griglia-ricette').addEventListener('click', (e) => {
             const card = e.target.closest('.ricetta-card'); if (card) apriDettaglioRicetta(card.getAttribute('data-id'));
         });
+
+        // ==========================================
+        // LA ROULETTE GOLOSA 🎲
+        // ==========================================
+        const btnRoulette = document.getElementById('btn-roulette');
+        if (btnRoulette) {
+            btnRoulette.addEventListener('click', () => {
+                if (ricetteAttualiFiltrate.length === 0) {
+                    alert("Non ci sono ricette con questi filtri! Impossibile pescare a caso.");
+                    return;
+                }
+
+                // Creiamo un piccolo effetto di "suspense"
+                const originalText = btnRoulette.innerHTML;
+                btnRoulette.innerHTML = "🎲 Pescaggio...";
+                btnRoulette.classList.add('disabled'); // Disabilita i click ripetuti
+
+                setTimeout(() => {
+                    // Pesca un numero a caso da 0 alla fine dell'elenco
+                    const randomIndex = Math.floor(Math.random() * ricetteAttualiFiltrate.length);
+                    const ricettaScelta = ricetteAttualiFiltrate[randomIndex];
+
+                    // Ripristina il bottone
+                    btnRoulette.innerHTML = originalText;
+                    btnRoulette.classList.remove('disabled');
+
+                    // Apre la ricetta fortunata!
+                    apriDettaglioRicetta(ricettaScelta.id);
+                }, 500); // Mezzo secondo di animazione
+            });
+        }
 
     } catch (error) { console.error(error); document.getElementById('griglia-ricette').innerHTML = `<div class="col-12 alert alert-danger">Errore database.</div>`; }
 }

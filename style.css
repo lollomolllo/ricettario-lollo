@@ -466,3 +466,30 @@ body.accesso-limitato #sezione-admin-tag,
 body.accesso-limitato #sezione-admin-dizionario {
     display: none !important;
 }
+
+/* ==========================================
+   6. RESTRIZIONI DI ACCESSO E LAYOUT CENTRATO
+   ========================================== */
+body.accesso-limitato #nav-calendario,
+body.accesso-limitato #bot-nav-calendario,
+body.accesso-limitato #nav-spesa,
+body.accesso-limitato #bot-nav-spesa,
+body.accesso-limitato #btn-nuova-ricetta-elenco,
+body.accesso-limitato #btn-modifica-ricetta,
+body.accesso-limitato #btn-elimina-ricetta,
+body.accesso-limitato #sezione-admin-tag,
+body.accesso-limitato #sezione-admin-dizionario {
+    display: none !important;
+}
+
+/* Queste righe centrano il riquadro grafico per gli operatori non-admin */
+body.accesso-limitato #row-impostazioni-top {
+    justify-content: center;
+}
+
+body.accesso-limitato #sezione-preferenze {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 600px;
+    /* Rende la card elegante e non troppo schiacciata */
+}

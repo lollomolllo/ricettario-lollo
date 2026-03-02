@@ -10,9 +10,14 @@ const UI = {
                     📚 Galleria ricette 
                     <span class="badge bg-primary fs-5 ms-3 shadow-sm" id="badge-totale-ricette">-</span>
                 </h2>
-                <button class="btn btn-primary shadow-sm fw-bold" id="btn-nuova-ricetta-elenco">
-                    ➕ Crea nuova ricetta
-                </button>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-warning shadow-sm fw-bold text-dark" id="btn-roulette" title="Cosa preparo? Sceglie a caso tra le ricette filtrate">
+                        🎲 Sorprendimi
+                    </button>
+                    <button class="btn btn-primary shadow-sm fw-bold" id="btn-nuova-ricetta-elenco">
+                        ➕ Crea nuova ricetta
+                    </button>
+                </div>
             </div>
             
             <div class="card mb-4 shadow-sm border-0 bg-white">
@@ -210,17 +215,19 @@ const UI = {
 
         griglia.innerHTML = html;
     },
+
+
     renderImpostazioni: function () {
         this.container.innerHTML = `
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 border-bottom pb-3">
-                <h2 class="mb-0 fw-bold">⚙️ Impostazioni sistema</h2>
+                <h2 class="mb-0 fw-bold">⚙️ Impostazioni</h2>
                 <button class="btn btn-info shadow-sm fw-bold text-white mt-3 mt-md-0 px-4 py-2" id="btn-apri-manuale" style="background-color: #17a2b8; border: none;">
                     📖 Leggi il Manuale d'Uso
                 </button>
             </div>
             
-            <div class="row">
-                <div class="col-md-6 mb-4">
+            <div class="row" id="row-impostazioni-top">
+                <div class="col-md-6 mb-4" id="sezione-preferenze">
                     <div class="card shadow-sm border-0 h-100">
                         <div class="card-header bg-dark text-white fw-bold p-3">🎨 Preferenze grafiche</div>
                         <div class="card-body bg-white p-4">
@@ -251,12 +258,12 @@ const UI = {
                             <div class="mb-4">
                                 <label class="form-label fw-bold text-primary">Categorie</label>
                                 <div class="input-group shadow-sm mb-2"><input type="text" id="input-categoria" class="form-control"><button class="btn btn-primary fw-bold" id="btn-add-categoria">+</button></div>
-                                <ul class="list-group shadow-sm" id="lista-categorie" style="max-height: 120px; overflow-y: auto;"></ul>
+                                <ul class="list-group shadow-sm" id="lista-categorie" style="max-height: 150px; overflow-y: auto;"></ul>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-bold text-secondary">Tag</label>
                                 <div class="input-group shadow-sm mb-2"><input type="text" id="input-tag" class="form-control"><button class="btn btn-secondary fw-bold text-white" id="btn-add-tag">+</button></div>
-                                <ul class="list-group shadow-sm" id="lista-tag" style="max-height: 120px; overflow-y: auto;"></ul>
+                                <ul class="list-group shadow-sm" id="lista-tag" style="max-height: 150px; overflow-y: auto;"></ul>
                             </div>
                         </div>
                     </div>
@@ -284,68 +291,76 @@ const UI = {
         `;
     },
 
+
     renderManuale: function () {
-        this.container.innerHTML = `
+        // Legge se chi sta visualizzando è l'Admin (se la variabile non esiste ancora, è false)
+        const isAdmin = typeof isUtenteAdmin !== 'undefined' ? isUtenteAdmin : false;
+
+        let html = `
             <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-                <h2 class="mb-0 fw-bold text-primary">📖 Manuale d'uso</h2>
+                <h2 class="mb-0 fw-bold text-primary">📖 Manuale d'uso ${isAdmin ? '<span class="text-danger">(Admin)</span>' : '<span class="text-secondary">(Operatore)</span>'}</h2>
                 <button class="btn btn-outline-secondary shadow-sm fw-bold" id="btn-chiudi-manuale">← Torna alle Impostazioni</button>
             </div>
             
             <div class="card shadow-sm border-0 mb-5">
                 <div class="card-body p-4 p-md-5" style="line-height: 1.8; font-size: 1.05rem;">
-                    <p class="fs-5 text-muted mb-5">Benvenuto nel tuo nuovo gestionale ricette in cloud. Questo strumento è stato progettato per semplificare e velocizzare il lavoro in laboratorio o in cucina, permettendoti di gestire distinte base complesse, calcolare proporzioni all'istante, pianificare la spesa con il tuo team e tenere traccia delle produzioni giornaliere.</p>
+                    <p class="fs-5 text-muted mb-5">Benvenuto nel gestionale ricette in cloud. L'interfaccia si adatta automaticamente al tuo dispositivo (PC o Smartphone).</p>
 
-                    <h4 class="fw-bold text-primary mt-4 border-bottom pb-2">1. 🧭 Navigazione e interfaccia</h4>
-                    <p>L'applicazione si adatta magicamente al dispositivo che stai usando:</p>
+                    <h4 class="fw-bold text-primary mt-4 border-bottom pb-2">1. 📚 Esplorare la Galleria</h4>
+                    <p>La schermata principale è la tua libreria. Puoi:</p>
                     <ul>
-                        <li><strong>Da Computer:</strong> Troverai un classico e comodo menu di navigazione in alto.</li>
-                        <li><strong>Da Smartphone:</strong> Troverai una pratica barra di navigazione fissata in basso da cui potrai scorrere tra le varie sezioni con il pollice.</li>
+                        <li>Cercare per <strong>Nome</strong>, filtrare per <strong>Categoria</strong> o <strong>Tag</strong>.</li>
+                        <li>Usare l'interruttore <strong>Categorie</strong> per raggruppare a cassetti o vedere tutto in ordine alfabetico (A-Z).</li>
+                        <li>Cambiare visualizzazione (Griglia, Elenco, Compatta) tramite i bottoni in alto a destra.</li>
+                    </ul>
+        `;
+
+        if (isAdmin) {
+            html += `
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">2. ➕ Creare e Modificare Ricette</h4>
+                    <p>Hai i permessi per alterare le ricette. Ecco le funzioni principali:</p>
+                    <ul>
+                        <li><strong>Drag & Drop:</strong> Tieni premuto il simbolo <code>⋮⋮</code> a sinistra di ingredienti e procedimenti per riordinarli liberamente. I numeri dei passaggi si calcoleranno da soli.</li>
+                        <li><strong>Sezioni 🗂️:</strong> Usa l'apposito tasto per creare intestazioni (es. "Per la Base", "Per la Crema") sia negli ingredienti che nei passaggi.</li>
+                        <li><strong>Distinte Base (Sottoricette):</strong> Cerca una ricetta "Base" e inserisci il moltiplicatore (es. 0.5 per mezza dose). Verrà esplosa in automatico nel ricalcolo.</li>
+                    </ul>
+            `;
+        }
+
+        html += `
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">${isAdmin ? '3' : '2'}. ⚖️ Ricalcolo e Calcolatore Teglie</h4>
+                    <p>Entrando in una ricetta, troverai le <strong>Porzioni da produrre</strong>. Usa i tasti <strong>−</strong> e <strong>+</strong> per calcolare all'istante le nuove grammature per la tua produzione.</p>
+                    <p><strong>Novità:</strong> Cliccando su <strong>"📐 Adatta a una nuova teglia"</strong>, potrai inserire la forma e la grandezza della teglia originale e di quella che intendi usare tu. Il sistema calcolerà la proporzione esatta di area e aggiornerà l'intera ricetta da solo!</p>
+
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">${isAdmin ? '4' : '3'}. 🧑‍🍳 Modalità Cucina (Mani in pasta)</h4>
+                    <p>Premi il pulsante giallo <strong>"🧑‍🍳 Cucina"</strong>: lo schermo diventerà nero e <strong>non si spegnerà mai</strong> da solo. A sinistra avrai gli ingredienti calcolati, a destra il procedimento. Fai tap sui passaggi che completi per barrarli e non perdere il segno.</p>
+        `;
+
+        if (isAdmin) {
+            html += `
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">5. 🛒 Spesa e 📅 Calendario</h4>
+                    <p>Essendo Amministratore, hai le chiavi per gestire la produzione:</p>
+                    <ul>
+                        <li><strong>Spesa:</strong> Aggiungi ricette al carrello; gli ingredienti verranno raggruppati e sommati. Tutto si salva sul cloud in tempo reale!</li>
+                        <li><strong>Calendario:</strong> Tieni traccia delle produzioni giornaliere, aggiungendo anche delle "Note" che si incolleranno in automatico alla storia della ricetta.</li>
                     </ul>
 
-                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">2. 📚 Galleria ricette</h4>
-                    <p>La schermata principale è la tua libreria. Sopra all'elenco troverai il bottone <strong>"➕ Crea nuova ricetta"</strong> e un potente motore di visualizzazione:</p>
-                    <ul>
-                        <li><strong>Filtri rapidi:</strong> Cerca scrivendo parte del nome, oppure usa le tendine per filtrare per categoria o tag.</li>
-                        <li><strong>Interruttore categorie:</strong> Accendilo per raggruppare le ricette in comodi "cassetti" divisi per categoria. Spegnilo per avere un elenco unico e continuo in perfetto ordine alfabetico.</li>
-                        <li><strong>Le 3 visualizzazioni:</strong> Griglia a card (ideale su PC), elenco con foto (perfetto su telefono), ed elenco compatto (per scorrere velocemente i titoli).</li>
-                    </ul>
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">6. ⚙️ Impostazioni, Dizionari e Aggiornamenti</h4>
+                    <p>Puoi gestire il dizionario degli ingredienti consentiti per mantenere i dati puliti. Se l'applicazione dovesse sembrare "bloccata" o non aggiornata, ricorda di premere <strong>Ctrl + F5</strong> sulla tastiera per svuotare la cache del browser (utile soprattutto su browser come Opera).</p>
+            `;
+        } else {
+            html += `
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">4. ⚙️ Preferenze grafiche</h4>
+                    <p>Nel menu impostazioni puoi scegliere il tema (Chiaro/Scuro) o l'impostazione predefinita per l'avvio della galleria, adattando l'app alle tue esigenze.</p>
+            `;
+        }
 
-                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">3. ➕ Creare e modificare una ricetta</h4>
-                    <p>Il modulo di creazione è diviso in 4 pratici blocchi. <strong>Puoi cliccare sull'intestazione colorata di ogni blocco per chiuderlo o aprirlo.</strong> I campi obbligatori sono solo due: <em>Nome ricetta</em> e <em>Porzioni base</em>.</p>
-                    <ul>
-                        <li><strong>Dati generali:</strong> Inserisci nome, categoria, foto, riposo, cottura. Usa i tasti <strong>−</strong> e <strong>+</strong> per i numeri.</li>
-                        <li><strong>Ingredienti:</strong> Mentre digiti il nome, il sistema ti suggerirà le parole usate in passato.</li>
-                        <li><strong>Procedimento:</strong> L'area di testo si allarga da sola. I numeri degli step si aggiornano automaticamente.</li>
-                        <li><strong>Sottoricette (Distinte Base):</strong> Se usi una base già salvata (es. Crema), cercala nella barra intelligente e inserisci il <strong>Moltiplicatore</strong> (es. 0.5 per mezza dose).</li>
-                    </ul>
-
-                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">4. ⚖️ Ricalcolo istantaneo</h4>
-                    <p>Entrando in una ricetta, troverai il riquadro degli Ingredienti. Usa i tasti <strong>−</strong> e <strong>+</strong> nel campo <strong>"Porzioni da produrre"</strong>. Tutti gli ingredienti si aggiorneranno all'istante, inclusi quelli delle eventuali sottoricette che verranno "esplosi".</p>
-
-                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">5. 🧑‍🍳 Modalità cucina (mani in pasta)</h4>
-                    <p>Devi metterti a impastare? Premi il pulsante giallo <strong>"🧑‍🍳 Cucina"</strong>.</p>
-                    <ul>
-                        <li>Lo schermo diventerà nero e <strong>rimarrà sempre acceso</strong> (nessun blocco automatico dello schermo).</li>
-                        <li>A sinistra avrai la lista ingredienti (ricalcolati), a destra i passaggi in grande.</li>
-                        <li>Toccando un passaggio completato, verrà sbarrato per non farti perdere il segno.</li>
-                    </ul>
-
-                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">6. 🛒 La lista della spesa</h4>
-                    <p>La sezione Spesa è <strong>condivisa in tempo reale con tutto il team</strong>.</p>
-                    <ul>
-                        <li>Seleziona le ricette e le porzioni che vuoi produrre, poi premi "➕ Aggiungi".</li>
-                        <li>Il gestionale "esploderà" le ricette e <strong>sommerà tutti gli ingredienti uguali</strong>.</li>
-                        <li>Mentre fai la spesa, fai tap sulla spunta per barrare i prodotti messi nel carrello.</li>
-                    </ul>
-
-                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">7. 📅 Diario e calendario di produzione</h4>
-                    <p>Tieni traccia del lavoro quotidiano. Seleziona la ricetta, la data e le porzioni prodotte. La <strong>Dashboard</strong> ti dirà quante preparazioni hai fatto quest'anno e qual è la ricetta "Best Seller". Puoi visualizzare lo storico come Elenco o come Calendario a griglia.</p>
-
-                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">8. ⚙️ Setup e impostazioni</h4>
-                    <p>Personalizza il gestionale: scegli la visuale predefinita, attiva il tema scuro per rilassare gli occhi, e gestisci le categorie e i tag (il sistema bloccherà in automatico l'inserimento di eventuali doppioni!).</p>
+        html += `
                 </div>
             </div>
         `;
+
+        this.container.innerHTML = html;
     },
 
     renderInserimento: function () {
