@@ -1851,5 +1851,79 @@ async function initSpesa() {
         });
     }
 
+    // ==========================================
+    // INVIA SU WHATSAPP (Senza Emoji e Pulito)
+    // ==========================================
+    const btnCondividiWA = document.getElementById('btn-condividi-whatsapp');
+    if (btnCondividiWA) {
+        btnCondividiWA.addEventListener('click', () => {
+            if (statoSpesa.ricetteInMenu.length === 0) {
+                alert("Il carrello è vuoto! Aggiungi qualche ricetta prima di inviare la spesa.");
+                return;
+            }
+
+            // 1. Costruisci il messaggio formattato per WA
+            let messaggio = "LA LISTA DELLA SPESA\n\n";
+
+            // Sezione Menu
+            messaggio += ">> Menu in programma:\n";
+            statoSpesa.ricetteInMenu.forEach(item => {
+                messaggio += `${item.nome} (${item.porzioni} porzioni)\n`;
+            });
+
+            messaggio += "\n>> Da comprare:\n";
+
+            // 2. Ricalcola gli ingredienti
+            let mappaIngredienti = {};
+            statoSpesa.ricetteInMenu.forEach(item => {
+                if (item.ingredientiEsplosi) {
+                    item.ingredientiEsplosi.forEach(ing => {
+                        let nomeNorm = ing.nome.trim().toLowerCase();
+                        let unitaNorm = (ing.unita || '').trim().toLowerCase();
+                        let key = `${nomeNorm}|${unitaNorm}`;
+
+                        if (!mappaIngredienti[key]) {
+                            let nomeDisplay = nomeNorm.charAt(0).toUpperCase() + nomeNorm.slice(1);
+                            mappaIngredienti[key] = { nome: nomeDisplay, unita: ing.unita, qta: 0 };
+                        }
+                        mappaIngredienti[key].qta += ing.qta;
+                    });
+                }
+            });
+
+            let ingredientiAggregati = Object.keys(mappaIngredienti).map(key => ({
+                key: key, ...mappaIngredienti[key]
+            })).sort((a, b) => a.nome.localeCompare(b.nome));
+
+            // 3. Aggiungiamo SOLO gli ingredienti NON SPUNTATI
+            let countDaComprare = 0;
+            ingredientiAggregati.forEach(ing => {
+                if (!statoSpesa.spunte[ing.key]) {
+                    let qtaArrotondata = Number(ing.qta.toFixed(2));
+
+                    // Correzione estetica per il "q.b."
+                    if (ing.unita === 'q.b.' && qtaArrotondata === 0) {
+                        messaggio += `☐ ${ing.nome} - q.b.\n`;
+                    } else {
+                        messaggio += `☐ ${ing.nome} - ${qtaArrotondata} ${ing.unita}\n`;
+                    }
+
+                    countDaComprare++;
+                }
+            });
+
+            if (countDaComprare === 0) {
+                alert("Hai già spuntato tutti gli ingredienti! Non c'è nulla da comprare.");
+                return;
+            }
+
+            messaggio += "\nGenerato dal mio Ricettario";
+
+            // 4. Apri WhatsApp passando il messaggio pulito
+            const url = `https://wa.me/?text=${encodeURIComponent(messaggio)}`;
+            window.open(url, '_blank');
+        });
+    }
+
     renderDatiSpesa();
 }
