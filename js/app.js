@@ -441,7 +441,8 @@ async function initInserimento() {
                 } else if (r.classList.contains('riga-ingrediente')) {
                     return {
                         nome: r.querySelector('.ing-nome').value.trim(),
-                        qta: parseFloat(r.querySelector('.ing-qta').value),
+                        // LA MAGIA È QUI SOTTO: L'aggiunta di "|| 0" salva il database dal crash!
+                        qta: parseFloat(r.querySelector('.ing-qta').value) || 0,
                         unita: r.querySelector('.ing-unita').value.trim()
                     };
                 }
