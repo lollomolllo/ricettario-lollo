@@ -786,14 +786,39 @@ async function initInserimento() {
             }
 
             const idCat = document.getElementById('ricetta-categoria').value;
+            let nomeDigitato = document.getElementById('ricetta-nome').value.trim();
+            const fonteInserita = document.getElementById('ricetta-fonte')?.value.trim() || null;
+
+            // ==========================================
+            // GESTIONE OMONIMIE (Rinomina sia la vecchia che la nuova)
+            // ==========================================
+            // Cerca se esiste già questo nome (escludendo la ricetta stessa se la stiamo modificando)
+            const duplicati = ricetteDB.filter(r => r.nome.toLowerCase() === nomeDigitato.toLowerCase() && r.id !== idRicettaInModifica);
+
+            if (duplicati.length > 0) {
+                // 1. Rinominiamo le ricette VECCHIE già presenti nel DB
+                for (let vecchia of duplicati) {
+                    let fonteVecchia = vecchia.fonte ? vecchia.fonte.trim() : 'Originale';
+                    let nomeVecchioAggiornato = `${vecchia.nome} - ${fonteVecchia}`;
+
+                    // Salviamo il nuovo nome della vecchia ricetta nel cloud
+                    await API.rinominaRicettaSingola(vecchia.id, nomeVecchioAggiornato);
+                }
+
+                // 2. Modifichiamo il nome di QUELLA CHE STIAMO SALVANDO ORA
+                let fonteNuova = fonteInserita ? fonteInserita : 'Nuova Variante';
+                nomeDigitato = `${nomeDigitato} - ${fonteNuova}`;
+
+                alert(`⚠️ Omonimia rilevata!\nLe ricette precedenti e quella attuale sono state rinominate in base alla loro "Fonte" per non confonderle in futuro.`);
+            }
+
             const ricettaData = {
-                nome: document.getElementById('ricetta-nome').value.trim(), id_categoria: idCat ? parseInt(idCat) : null,
+                nome: nomeDigitato, id_categoria: idCat ? parseInt(idCat) : null,
                 porzioni_base: parseFloat(document.getElementById('ricetta-porzioni').value), unita_porzioni: document.getElementById('ricetta-unita').value.trim(),
                 tempo_riposo_ore: parseFloat(document.getElementById('ricetta-riposo').value) || 0, tempo_cottura_min: parseInt(document.getElementById('ricetta-cottura').value) || 0,
-                fonte: document.getElementById('ricetta-fonte')?.value.trim() || null, link_fonte: document.getElementById('ricetta-link')?.value.trim() || null,
+                fonte: fonteInserita, link_fonte: document.getElementById('ricetta-link')?.value.trim() || null,
                 note: document.getElementById('ricetta-note')?.value.trim() || null, url_immagine: url_immagine
             };
-
             const tagsSpuntati = Array.from(document.querySelectorAll('.checkbox-tag:checked')).map(cb => cb.value);
 
             // Sostituisci l'estrazione degli ingredienti con questa:
@@ -980,6 +1005,8 @@ async function initElenco() {
         inputTesto.addEventListener('input', () => applicaFiltri(false));
         inputIngrediente.addEventListener('input', () => applicaFiltri(false));
         selectCat.addEventListener('change', () => applicaFiltri(false));
+        selectTag.addEventListener('change', () => applicaFiltri(false));
+
         // Cliccando sui bottoni, aggiorniamo la variabile e la grafica
         btnGrid.addEventListener('click', () => { currentView = 'grid'; aggiornaBottoniVista(); applicaFiltri(true); });
         btnList.addEventListener('click', () => { currentView = 'list'; aggiornaBottoniVista(); applicaFiltri(true); });
