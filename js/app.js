@@ -892,7 +892,7 @@ async function initElenco() {
         const btnToggleDispensa = document.getElementById('btn-toggle-dispensa');
         const containerDispensa = document.getElementById('container-filtro-ingrediente');
 
-        // Logica per Aprire/Chiudere il pannello Dispensa 🥕
+        // Logica per Aprire/Chiudere il pannello Dispensa
         if (btnToggleDispensa) {
             btnToggleDispensa.addEventListener('click', () => {
                 containerDispensa.classList.toggle('d-none');
@@ -992,7 +992,7 @@ async function initElenco() {
         });
 
         // ==========================================
-        // LA ROULETTE GOLOSA 🎲
+        // LA ROULETTE GOLOSA 
         // ==========================================
         const btnRoulette = document.getElementById('btn-roulette');
         if (btnRoulette) {
@@ -1004,7 +1004,7 @@ async function initElenco() {
 
                 // Creiamo un piccolo effetto di "suspense"
                 const originalText = btnRoulette.innerHTML;
-                btnRoulette.innerHTML = "🎲 Pescaggio...";
+                btnRoulette.innerHTML = "<i class='bi bi-dice-5-fill'></i> Estrazione...";
                 btnRoulette.classList.add('disabled'); // Disabilita i click ripetuti
 
                 setTimeout(() => {
@@ -1048,7 +1048,7 @@ async function apriDettaglioRicetta(id_ricetta) {
             // Render Lista Ingredienti Principale
             listIng.innerHTML = ricetta.ingredienti.map(ing => {
                 if (ing.unita_distinta === 'SEZIONE') {
-                    return `<li class="list-group-item bg-light text-primary fw-bold mt-2 border-top border-primary border-2" style="font-size: 0.95rem; text-transform: uppercase;">🗂️ ${ing.nome_ingrediente.replace(/---/g, '').trim()}</li>`;
+                    return `<li class="list-group-item bg-light text-primary fw-bold mt-2 border-top border-primary border-2" style="font-size: 0.95rem; text-transform: uppercase;"><i class="bi bi-folder-plus me-1"></i> ${ing.nome_ingrediente.replace(/---/g, '').trim()}</li>`;
                 }
                 return `<li class="list-group-item d-flex justify-content-between align-items-center">${ing.nome_ingrediente}<span class="badge bg-dark rounded-pill fs-6 shadow-sm">${Number((ing.quantita * rapporto).toFixed(2))} ${ing.unita_distinta}</span></li>`;
             }).join('') || '<li class="list-group-item">Nessun ingrediente</li>';
@@ -1077,7 +1077,7 @@ async function apriDettaglioRicetta(id_ricetta) {
                     if (f.ingredienti) {
                         htmlSr += f.ingredienti.map(si => {
                             if (si.unita_distinta === 'SEZIONE') {
-                                return `<li class="list-group-item bg-light text-primary fw-bold mt-1" style="font-size: 0.8rem; text-transform: uppercase;">🗂️ ${si.nome_ingrediente.replace(/---/g, '').trim()}</li>`;
+                                return `<li class="list-group-item bg-light text-primary fw-bold mt-1" style="font-size: 0.8rem; text-transform: uppercase;"><i class="bi bi-folder-plus me-1"></i> ${si.nome_ingrediente.replace(/---/g, '').trim()}</li>`;
                             }
                             return `<li class="list-group-item d-flex justify-content-between align-items-center bg-light">${si.nome_ingrediente}<span class="fw-bold">${Number((si.quantita * rapSr).toFixed(2))} ${si.unita_distinta}</span></li>`;
                         }).join('');
@@ -1089,7 +1089,7 @@ async function apriDettaglioRicetta(id_ricetta) {
                         let procCount = 1;
                         subs.forEach(st => {
                             if (st.descrizione.startsWith('---') && st.descrizione.endsWith('---')) {
-                                htmlSr += `<h6 class="mt-2 mb-1 text-info fw-bold" style="font-size: 0.85rem;">🗂️ ${st.descrizione.replace(/---/g, '').trim()}</h6>`;
+                                htmlSr += `<h6 class="mt-2 mb-1 text-info fw-bold" style="font-size: 0.85rem;"><i class="bi bi-folder-plus me-1"></i> ${st.descrizione.replace(/---/g, '').trim()}</h6>`;
                             } else {
                                 htmlSr += `<div class="mb-2 small"><strong>${procCount++}.</strong> ${st.descrizione}</div>`;
                             }
@@ -1293,7 +1293,7 @@ async function apriDettaglioRicetta(id_ricetta) {
 
     } catch (error) {
         console.error("Errore critico in apriDettaglioRicetta:", error);
-        UI.container.innerHTML = `<div class="alert alert-danger m-4 shadow-sm"><h4 class="alert-heading fw-bold">⚠️ Errore di caricamento</h4><p>${error.message}</p><hr><button class="btn btn-outline-danger" onclick="UI.renderElenco(); initElenco();">Torna all'elenco</button></div>`;
+        UI.container.innerHTML = `<div class="alert alert-danger m-4 shadow-sm"><h4 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> Errore di caricamento</h4><p>${error.message}</p><hr><button class="btn btn-outline-danger" onclick="UI.renderElenco(); initElenco();">Torna all'elenco</button></div>`;
     }
 }
 let wakeLockCucina = null;
@@ -1302,7 +1302,7 @@ async function avviaModalitaCucina(ricetta, rapportoPorzioni) {
     let htmlIngredienti = '<h3 class="mb-4 text-warning fw-bold">Ingredienti</h3><ul class="list-group list-group-flush fs-5">';
     ricetta.ingredienti.forEach(ing => {
         if (ing.unita_distinta === 'SEZIONE') {
-            htmlIngredienti += `<h5 class="mt-4 mb-2 text-info fw-bold border-bottom border-secondary pb-1">🗂️ ${ing.nome_ingrediente.replace(/---/g, '').trim()}</h5>`;
+            htmlIngredienti += `<h5 class="mt-4 mb-2 text-info fw-bold border-bottom border-secondary pb-1"><i class="bi bi-folder-plus me-1"></i> ${ing.nome_ingrediente.replace(/---/g, '').trim()}</h5>`;
         } else {
             htmlIngredienti += `<li class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between align-items-center ps-0 pe-0">${ing.nome_ingrediente} <strong class="text-warning">${Number((ing.quantita * rapportoPorzioni).toFixed(2))} ${ing.unita_distinta}</strong></li>`;
         }
@@ -1865,13 +1865,13 @@ async function initSpesa() {
             statoSpesa.spunte = {};
 
             inputRicercaSpesa.value = ''; hiddenSpesaId.value = ''; inputPorzioni.value = '';
-            btnAggiungi.disabled = true; btnAggiungi.innerHTML = '➕ Aggiungi alla spesa';
+            btnAggiungi.disabled = true; btnAggiungi.innerHTML = '<i class="bi bi-plus-square"></i> Aggiungi alla spesa';
 
             renderDatiSpesa();
         } catch (e) {
             console.error(e);
             alert("Errore nell'estrazione della distinta base.");
-            btnAggiungi.disabled = false; btnAggiungi.innerHTML = '➕ Aggiungi alla spesa';
+            btnAggiungi.disabled = false; btnAggiungi.innerHTML = '<i class="bi bi-plus-square"></i> Aggiungi alla spesa';
         }
     });
 

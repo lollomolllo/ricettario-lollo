@@ -7,15 +7,15 @@ const UI = {
         this.container.innerHTML = `
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
                 <h2 class="mb-0 fw-bold d-flex align-items-center">
-                    📚 Galleria ricette 
+                    <i class="bi bi-grid-fill me-1"></i> Ricettario 
                     <span class="badge bg-primary fs-5 ms-3 shadow-sm" id="badge-totale-ricette">-</span>
                 </h2>
                 <div class="d-flex gap-2 flex-wrap">
                     <button class="btn btn-warning shadow-sm fw-bold text-dark" id="btn-roulette" title="Cosa preparo? Sceglie a caso tra le ricette filtrate">
-                        🎲 Sorprendimi
+                        <i class="bi bi-dice-5-fill"></i> Estrai
                     </button>
                     <button class="btn btn-primary shadow-sm fw-bold" id="btn-nuova-ricetta-elenco">
-                        ➕ Crea nuova ricetta
+                        <i class="bi bi-plus-square"></i> Crea nuova ricetta
                     </button>
                 </div>
             </div>
@@ -36,7 +36,7 @@ const UI = {
                             <select id="filtro-tag" class="form-select shadow-sm w-100">
                                 <option value="">Tutti i tag</option>
                             </select>
-                            <button class="btn btn-warning fw-bold border-warning text-dark px-3 shadow-sm flex-shrink-0 rounded" id="btn-toggle-dispensa" title="Ricerca Svuota-Dispensa" type="button">🥕</button>
+                            <button class="btn btn-warning fw-bold border-warning text-dark px-3 shadow-sm flex-shrink-0 rounded" id="btn-toggle-dispensa" title="Ricerca Svuota-Dispensa" type="button"><i class="bi bi-fork-knife"></i></button>
                         </div>
                         
                         <div class="col-md-3 d-flex align-items-center justify-content-md-end justify-content-between gap-3">
@@ -56,7 +56,7 @@ const UI = {
                     <div class="row mt-3 d-none" id="container-filtro-ingrediente">
                         <div class="col-12">
                             <div class="p-3 bg-warning bg-opacity-10 border border-warning rounded shadow-sm d-flex align-items-center gap-3">
-                                <span class="fs-4">🥕</span>
+                                <span class="fs-4"><i class="bi bi-fork-knife"></i></span>
                                 <div class="flex-grow-1">
                                     <label class="form-label fw-bold text-dark mb-1">Ricerca Svuota-Dispensa</label>
                                     <input type="text" id="filtro-ingrediente" class="form-control border-warning shadow-sm" placeholder="Scrivi gli ingredienti separati da virgola (es. farina, uova)...">
@@ -226,16 +226,16 @@ const UI = {
     renderImpostazioni: function () {
         this.container.innerHTML = `
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 border-bottom pb-3">
-                <h2 class="mb-0 fw-bold">⚙️ Impostazioni</h2>
+                <h2 class="mb-0 fw-bold"><i class="bi bi-gear"></i> Impostazioni</h2>
                 <button class="btn btn-info shadow-sm fw-bold text-white mt-3 mt-md-0 px-4 py-2" id="btn-apri-manuale" style="background-color: #17a2b8; border: none;">
-                    📖 Leggi il Manuale d'Uso
+                    <i class="bi bi-book-fill"></i> Leggi il Manuale d'Uso
                 </button>
             </div>
             
             <div class="row" id="row-impostazioni-top">
                 <div class="col-md-6 mb-4" id="sezione-preferenze">
                     <div class="card shadow-sm border-0 h-100">
-                        <div class="card-header bg-dark text-white fw-bold p-3">🎨 Preferenze grafiche</div>
+                        <div class="card-header bg-dark text-white fw-bold p-3"><i class="bi bi-palette-fill"></i> Preferenze grafiche</div>
                         <div class="card-body bg-white p-4">
                             <div class="mb-4">
                                 <label class="form-label fw-bold text-dark">Tema dell'app</label>
@@ -259,7 +259,7 @@ const UI = {
 
                 <div class="col-md-6 mb-4" id="sezione-admin-tag">
                     <div class="card shadow-sm border-0 h-100">
-                        <div class="card-header bg-primary text-white fw-bold p-3">🏷️ Categorie e Tag</div>
+                        <div class="card-header bg-primary text-white fw-bold p-3"><i class="bi bi-bookmark-fill"></i> Categorie e Tag</div>
                         <div class="card-body bg-white p-4">
                             <div class="mb-4">
                                 <label class="form-label fw-bold text-primary">Categorie</label>
@@ -279,7 +279,7 @@ const UI = {
             <div class="row" id="sezione-admin-dizionario">
                 <div class="col-12 mb-5">
                     <div class="card shadow-sm border-warning">
-                        <div class="card-header bg-warning text-dark fw-bold p-3">🛒 Dizionario Ingredienti Centrale</div>
+                        <div class="card-header bg-warning text-dark fw-bold p-3"><i class="bi bi-cart-fill"></i> Dizionario Ingredienti Centrale</div>
                         <div class="card-body bg-white p-4">
                             <p class="small text-muted mb-3">Gli ingredienti inseriti qui saranno <strong>gli unici selezionabili</strong> nelle ricette. Separa più unità di misura con la virgola (es. <span class="badge bg-light text-dark">g, ml</span> oppure <span class="badge bg-light text-dark">pz</span>).</p>
                             <div class="row g-2 mb-3">
@@ -304,7 +304,7 @@ const UI = {
 
         let html = `
             <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-                <h2 class="mb-0 fw-bold text-primary">📖 Manuale d'uso ${isAdmin ? '<span class="text-danger">(Admin)</span>' : '<span class="text-secondary">(Operatore)</span>'}</h2>
+                <h2 class="mb-0 fw-bold text-primary"><i class="bi bi-book-fill"></i> Manuale d'uso ${isAdmin ? '<span class="text-danger">(Admin)</span>' : '<span class="text-secondary">(Operatore)</span>'}</h2>
                 <button class="btn btn-outline-secondary shadow-sm fw-bold" id="btn-chiudi-manuale">← Torna alle Impostazioni</button>
             </div>
             
@@ -312,24 +312,24 @@ const UI = {
                 <div class="card-body p-4 p-md-5" style="line-height: 1.8; font-size: 1.05rem;">
                     <p class="fs-5 text-muted mb-5">Benvenuto nel gestionale ricette in cloud. L'interfaccia si adatta automaticamente al tuo dispositivo (PC o Smartphone).</p>
 
-                    <h4 class="fw-bold text-primary mt-4 border-bottom pb-2">1. 📚 Esplorare la Galleria</h4>
+                    <h4 class="fw-bold text-primary mt-4 border-bottom pb-2">1. <i class="bi bi-book-fill"></i> Esplorare la Galleria</h4>
                     <p>La schermata principale è la tua libreria. Puoi:</p>
                     <ul>
                         <li>Cercare per <strong>Nome</strong>, o filtrare a tendina per <strong>Categoria</strong> e <strong>Tag</strong>.</li>
                         <li>Usare l'interruttore <strong>Categorie</strong> per raggruppare a cassetti o vedere tutto in ordine alfabetico (A-Z).</li>
                         <li>Cambiare visualizzazione (Griglia, Elenco, Compatta) tramite i bottoni in alto a destra.</li>
-                        <li class="mt-2">🥕 <strong>Ricerca Svuota-Dispensa:</strong> Clicca sul bottone con la carota per aprire la ricerca per ingredienti. Scrivi più ingredienti separati da virgola (es. <em>mascarpone, fragole</em>) per trovare tutte le ricette che li contengono (anche all'interno delle loro sottoricette!).</li>
-                        <li>🎲 <strong>La Roulette:</strong> Non sai cosa cucinare? Applica i tuoi filtri preferiti (es. Categoria "Torte") e premi <strong>"Sorprendimi"</strong> per farti pescare una ricetta a caso dal sistema.</li>
+                        <li class="mt-2"><i class="bi bi-fork-knife"></i> <strong>Ricerca Svuota-Dispensa:</strong> Clicca sul bottone con la carota per aprire la ricerca per ingredienti. Scrivi più ingredienti separati da virgola (es. <em>mascarpone, fragole</em>) per trovare tutte le ricette che li contengono (anche all'interno delle loro sottoricette!).</li>
+                        <li><i class="bi bi-dice-5"></i> <strong>La Roulette:</strong> Non sai cosa cucinare? Applica i tuoi filtri preferiti (es. Categoria "Torte") e premi <strong>"Sorprendimi"</strong> per farti pescare una ricetta a caso dal sistema.</li>
                     </ul>
         `;
 
         if (isAdmin) {
             html += `
-                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">2. ➕ Creare e Modificare Ricette</h4>
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">2. <i class="bi bi-plus-circle-fill"></i> Creare e Modificare Ricette</h4>
                     <p>Hai i permessi per alterare le ricette. Ecco le funzioni principali:</p>
                     <ul>
                         <li><strong>Drag & Drop:</strong> Tieni premuto il simbolo <code>⋮⋮</code> a sinistra di ingredienti e procedimenti per riordinarli liberamente. I numeri dei passaggi si calcoleranno da soli.</li>
-                        <li><strong>Sezioni 🗂️:</strong> Usa l'apposito tasto per creare intestazioni (es. "Per la Base", "Per la Crema") sia negli ingredienti che nei passaggi.</li>
+                        <li><strong>Sezioni <i class="bi bi-folder-plus me-1"></i>:</strong> Usa l'apposito tasto per creare intestazioni (es. "Per la Base", "Per la Crema") sia negli ingredienti che nei passaggi.</li>
                         <li><strong>Distinte Base (Sottoricette):</strong> Cerca una ricetta "Base" e inserisci il moltiplicatore (es. 0.5 per mezza dose). Verrà esplosa in automatico nel ricalcolo.</li>
                     </ul>
             `;
@@ -346,19 +346,19 @@ const UI = {
 
         if (isAdmin) {
             html += `
-                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">5. 🛒 Spesa e 📅 Calendario</h4>
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">5. <i class="bi bi-cart-fill"></i> Spesa e <i class="bi bi-calendar-event-fill"></i> Calendario</h4>
                     <p>Essendo Amministratore, hai le chiavi per gestire la produzione:</p>
                     <ul>
                         <li><strong>Spesa:</strong> Aggiungi ricette al carrello; gli ingredienti verranno raggruppati e sommati. Con il bottone <strong>"Invia su WA"</strong> puoi formattare automaticamente il carrello in un messaggio Whatsapp pulito ed elegante!</li>
                         <li><strong>Calendario:</strong> Tieni traccia delle produzioni giornaliere, aggiungendo anche delle "Note" che si incolleranno in automatico alla storia della ricetta.</li>
                     </ul>
 
-                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">6. ⚙️ Impostazioni e Backup</h4>
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">6. <i class="bi bi-gear"></i> Impostazioni e Backup</h4>
                     <p>Puoi gestire il dizionario degli ingredienti consentiti per mantenere i dati puliti. Se l'applicazione dovesse sembrare "bloccata" o non aggiornata, ricorda di premere <strong>Ctrl + F5</strong> sulla tastiera per svuotare la cache del browser.</p>
             `;
         } else {
             html += `
-                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">4. ⚙️ Preferenze grafiche</h4>
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">4. <i class="bi bi-gear"></i> Preferenze grafiche</h4>
                     <p>Nel menu impostazioni puoi scegliere il tema (Chiaro/Scuro) o l'impostazione predefinita per l'avvio della galleria, adattando l'app alle tue esigenze visive.</p>
             `;
         }
@@ -376,21 +376,21 @@ const UI = {
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 border-bottom pb-3">
                 <h2 id="titolo-inserimento" class="mb-3 mb-md-0 fw-bold">Nuova ricetta</h2>
                 <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <button type="button" class="btn btn-outline-primary shadow-sm fw-bold" id="btn-toggle-import">⬇️ Importa da Testo / TXT</button>
-                    <button type="button" class="btn btn-outline-danger shadow-sm fw-bold d-none" id="btn-elimina-ricetta-form">🗑 Elimina</button>
-                    <button type="submit" form="form-ricetta" class="btn btn-success shadow-sm fw-bold" id="btn-salva-ricetta-top">💾 Salva ricetta</button>
+                    <button type="button" class="btn btn-outline-primary shadow-sm fw-bold" id="btn-toggle-import"><i class="bi bi-download"></i> Importa da Testo / TXT</button>
+                    <button type="button" class="btn btn-outline-danger shadow-sm fw-bold d-none" id="btn-elimina-ricetta-form"><i class="bi bi-trash"></i> Elimina</button>
+                    <button type="submit" form="form-ricetta" class="btn btn-success shadow-sm fw-bold" id="btn-salva-ricetta-top"><i class="bi bi-floppy2-fill"></i> Salva ricetta</button>
                 </div>
             </div>
             
             <div class="card mb-4 shadow-sm border-primary d-none" id="panel-import-rapido">
                 <div class="card-body bg-light">
-                    <h5 class="fw-bold text-primary mb-3">Importazione Rapida (AI)</h5>
-                    <textarea class="form-control mb-3 shadow-sm" id="testo-import-rapido" rows="6" placeholder="Incolla qui il testo elaborato dall'IA..."></textarea>
+                    <h5 class="fw-bold text-primary mb-3">Importazione rapida</h5>
+                    <textarea class="form-control mb-3 shadow-sm" id="testo-import-rapido" rows="6" placeholder="Incolla qui il testo elaborato..."></textarea>
                     <div class="d-flex gap-2 align-items-center flex-wrap">
-                        <button type="button" class="btn btn-primary fw-bold shadow-sm" id="btn-analizza-testo">✍️ Invia e Compila Form</button>
+                        <button type="button" class="btn btn-primary fw-bold shadow-sm" id="btn-analizza-testo"><i class="bi bi-pen"></i> Invia e compila form</button>
                         <span class="text-muted fw-bold mx-2">OPPURE</span>
                         <input type="file" id="input-import-txt" accept=".txt" class="d-none">
-                        <button type="button" class="btn btn-outline-dark fw-bold shadow-sm" id="btn-import-file">📁 Importa da file TXT</button>
+                        <button type="button" class="btn btn-outline-dark fw-bold shadow-sm" id="btn-import-file"><i class="bi bi-file-earmark-text"></i> Importa da file TXT</button>
                     </div>
                 </div>
             </div>
@@ -476,7 +476,7 @@ const UI = {
                         <div class="card-body bg-white pt-4">
                             
                             <div class="mb-4 bg-light p-3 rounded border border-success border-opacity-25 shadow-sm">
-                                <label class="form-label fw-bold text-success mb-2">🔍 Cerca e aggiungi ingrediente</label>
+                                <label class="form-label fw-bold text-success mb-2"><i class="bi bi-search"></i> Cerca e aggiungi ingrediente</label>
                                 <input type="text" id="ricerca-ingrediente" class="form-control shadow-sm border-success" placeholder="Inizia a digitare (es. Farina...) e premi Invio" autocomplete="off">
                                 <div id="suggerimenti-ingredienti" class="d-flex flex-wrap gap-2 mt-3"></div>
                             </div>
@@ -488,8 +488,8 @@ const UI = {
                             <div id="container-ingredienti"></div>
                             
                             <div class="d-flex gap-2 mt-3">
-                                <button type="button" class="btn btn-sm btn-outline-info fw-bold shadow-sm" id="btn-add-sezione-ing">🗂️ Aggiungi Sezione</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm d-none" id="btn-add-ingrediente">➕ Aggiungi riga manuale</button>
+                                <button type="button" class="btn btn-sm btn-outline-info fw-bold shadow-sm" id="btn-add-sezione-ing"><i class="bi bi-folder-plus me-1"></i> Aggiungi Sezione</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm d-none" id="btn-add-ingrediente"><i class="bi bi-plus-circle-fill"></i> Aggiungi riga manuale</button>
                             </div>
                         </div>
                     </div>
@@ -505,8 +505,8 @@ const UI = {
                         <div class="card-body bg-white pt-4">
                             <div id="container-procedimento"></div>
 <div class="d-flex gap-2 mt-3">
-                                <button type="button" class="btn btn-sm btn-outline-info fw-bold shadow-sm" id="btn-add-sezione-step">🗂️ Aggiungi Sezione</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm" id="btn-add-step">➕ Aggiungi passaggio</button>
+                                <button type="button" class="btn btn-sm btn-outline-info fw-bold shadow-sm" id="btn-add-sezione-step"><i class="bi bi-folder-plus me-1"></i> Aggiungi Sezione</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm" id="btn-add-step"><i class="bi bi-plus-circle-fill"></i> Aggiungi passaggio</button>
                             </div>                        </div>
                     </div>
                 </div>
@@ -521,7 +521,7 @@ const UI = {
                             <p class="small text-muted mb-3">Includi altre ricette indicando il moltiplicatore (es. 0.5 per mezza dose).</p>
                             
                             <div class="mb-4 bg-light p-3 rounded border border-warning border-opacity-25 shadow-sm">
-                                <label class="form-label fw-bold text-dark mb-2">🔍 Cerca e aggiungi sottoricetta</label>
+                                <label class="form-label fw-bold text-dark mb-2"><i class="bi bi-search"></i> Cerca e aggiungi sottoricetta</label>
                                 <input type="text" id="ricerca-sottoricetta" class="form-control shadow-sm border-warning" placeholder="Inizia a digitare (es. Crema...) e clicca sul suggerimento" autocomplete="off">
                                 <div id="suggerimenti-sottoricette" class="d-flex flex-wrap gap-2 mt-3"></div>
                             </div>
@@ -535,7 +535,7 @@ const UI = {
               <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg">
                   <div class="modal-header bg-warning text-dark border-0">
-                    <h5 class="modal-title fw-bold">⚠️ Ingrediente non in elenco</h5>
+                    <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> Ingrediente non in elenco</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body p-4">
@@ -544,12 +544,12 @@ const UI = {
                     
                     <div class="d-grid gap-3">
                       <button type="button" class="btn btn-outline-primary fw-bold text-start p-3" id="btn-opt-locale">
-                        1️⃣ Inseriscilo SOLO in questa ricetta
+                        <i class="bi bi-file-earmark-plus"></i> Inseriscilo SOLO in questa ricetta
                       </button>
                       
                       <div class="card border-success shadow-sm">
                         <button type="button" class="btn btn-success fw-bold text-start p-3 border-0" data-bs-toggle="collapse" data-bs-target="#collapse-add-diz">
-                          2️⃣ Aggiungilo al Dizionario (Consigliato)
+                          <i class="bi bi-plus-circle-fill"></i> Aggiungilo al dizionario (Consigliato)
                         </button>
                         <div class="collapse" id="collapse-add-diz">
                           <div class="card-body bg-light">
@@ -563,7 +563,7 @@ const UI = {
                       </div>
 
                       <button type="button" class="btn btn-light fw-bold text-start p-3 border" data-bs-dismiss="modal">
-                        3️⃣ Annulla (ho sbagliato a scrivere)
+                        <i class="bi bi-x-circle-fill"></i> Annulla (ho sbagliato a scrivere)
                       </button>
                     </div>
                   </div>
@@ -707,7 +707,7 @@ const UI = {
             ricetta.procedimento.forEach(step => {
                 const testo = step.descrizione || '';
                 if (testo.startsWith('---') && testo.endsWith('---')) {
-                    stepHTML += `<h5 class="mt-4 mb-2 text-primary fw-bold border-bottom border-primary pb-1">🗂️ ${testo.replace(/---/g, '').trim()}</h5>`;
+                    stepHTML += `<h5 class="mt-4 mb-2 text-primary fw-bold border-bottom border-primary pb-1"><i class="bi bi-folder-plus me-1"></i> ${testo.replace(/---/g, '').trim()}</h5>`;
                 } else {
                     // Allineamento centrato, pallino più elegante e rientranze corrette
                     stepHTML += `
@@ -728,13 +728,13 @@ const UI = {
                 
                 <div class="d-flex flex-wrap gap-2">
                     <button class="btn btn-warning btn-sm shadow-sm fw-bold" id="btn-cucina-ricetta">
-                        🧑‍🍳 Cucina
+                        <i class="bi bi-egg-fried"></i> Cucina
                     </button>
                     <button class="btn btn-outline-success btn-sm shadow-sm" id="btn-stampa-ricetta">
-                        🖨️ Stampa
+                        <i class="bi bi-printer-fill"></i> Stampa
                     </button>
                     <button class="btn btn-outline-primary btn-sm shadow-sm" id="btn-modifica-ricetta" data-id="${ricetta.id}">
-                        ✏️ Modifica
+                        <i class="bi bi-pen"></i> Modifica
                     </button>
                     <button class="btn btn-outline-danger btn-sm shadow-sm" id="btn-elimina-ricetta" data-id="${ricetta.id}" data-img="${ricetta.url_immagine || ''}">
                         🗑 Elimina
@@ -793,7 +793,7 @@ const UI = {
                             </div>
 
                             <button class="btn btn-outline-info btn-sm w-100 fw-bold shadow-sm mb-4" data-bs-toggle="modal" data-bs-target="#modal-calcolatore-teglie">
-                                📐 Adatta a una nuova teglia
+                                <i class="bi bi-calculator"></i> Adatta a una nuova teglia
                             </button>
 
                             <ul class="list-group list-group-flush shadow-sm" id="lista-ingredienti-ricalcolati">
@@ -812,9 +812,9 @@ const UI = {
     renderCalendario: function () {
         this.container.innerHTML = `
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>🗓️ Storico di produzione</h2>
+                <h2><i class="bi bi-calendar-check"></i> Storico di produzione</h2>
                 <button class="btn btn-success fw-bold shadow-sm" id="btn-nuova-produzione">
-                    ➕ Registra produzione
+                    <i class="bi bi-plus-circle-fill"></i> Registra produzione
                 </button>
             </div>
 
@@ -830,7 +830,7 @@ const UI = {
                     <form id="form-produzione">
                         <div class="row g-3">
                             <div class="col-md-7">
-                                <label class="form-label fw-bold">🔍 Cerca Ricetta Prodotta</label>
+                                <label class="form-label fw-bold"><i class="bi bi-search"></i> Cerca Ricetta Prodotta</label>
                                 <input type="text" id="ricerca-prod-ricetta" class="form-control border-success shadow-sm" placeholder="Inizia a digitare (es. Crema...)" autocomplete="off">
                                 <div id="suggerimenti-prod-ricetta" class="d-flex flex-wrap gap-2 mt-2"></div>
                                 <input type="hidden" id="prod-ricetta-id" required>
@@ -856,10 +856,10 @@ const UI = {
                     <h5 class="mb-0 fw-bold text-dark">Registro eventi</h5>
                     <div class="btn-group shadow-sm" role="group">
                         <button type="button" class="btn btn-outline-dark active" id="btn-view-lista" title="Vista Diario">
-                            📄 Diario
+                            <i class="bi bi-list"></i> Diario
                         </button>
                         <button type="button" class="btn btn-outline-dark" id="btn-view-griglia" title="Vista Calendario Mensile">
-                            📅 Calendario
+                            <i class="bi bi-calendar-week"></i> Calendario
                         </button>
                     </div>
                 </div>
@@ -872,7 +872,7 @@ const UI = {
     renderSpesa: function () {
         this.container.innerHTML = `
             <div class="d-flex justify-content-between align-items-center mb-4 gap-2 flex-wrap">
-                <h2 class="mb-0">🛒 Lista della spesa</h2>
+                <h2 class="mb-0"><i class="bi bi-cart-fill"></i> Lista della spesa</h2>
                 <div class="d-flex gap-2">
                     <button class="btn btn-success btn-sm shadow-sm fw-bold text-white d-flex align-items-center" id="btn-condividi-whatsapp">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-2" viewBox="0 0 16 16"><path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.49.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/></svg>
@@ -889,7 +889,7 @@ const UI = {
                             Aggiungi al carrello
                         </div>
                         <div class="card-body bg-light">
-                            <label class="form-label small fw-bold text-muted">🔍 Cerca Ricetta:</label>
+                            <label class="form-label small fw-bold text-muted"><i class="bi bi-search"></i> Cerca Ricetta:</label>
                             <input type="text" id="ricerca-spesa-ricetta" class="form-control mb-3 shadow-sm border-primary" placeholder="Inizia a digitare..." autocomplete="off">
                             <div id="suggerimenti-spesa-ricetta" class="d-flex flex-wrap gap-2 mb-3"></div>
                             <input type="hidden" id="spesa-ricetta-id">
@@ -902,7 +902,7 @@ const UI = {
                             </div>
                             
                             <button class="btn btn-primary w-100 fw-bold shadow-sm" id="btn-aggiungi-spesa" disabled>
-                                ➕ Aggiungi alla spesa
+                                <i class="bi bi-cart-plus-fill"></i> Aggiungi alla spesa
                             </button>
                         </div>
                     </div>

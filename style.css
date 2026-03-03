@@ -1,4 +1,124 @@
 /* ==========================================
+   IL NUOVO LOOK PROFESSIONALE (SaaS Design)
+   ========================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* 1. Colori più eleganti e desaturati */
+    --bs-primary: #334155;
+    /* Grigio-Blu Ardesia Elegante */
+    --bs-primary-rgb: 51, 65, 85;
+    --bs-success: #10b981;
+    /* Verde Smeraldo brillante ma non fluo */
+    --bs-warning: #f59e0b;
+    /* Ambra caldo */
+    --bs-info: #0ea5e9;
+    /* Azzurro cielo */
+    --bs-danger: #ef4444;
+    /* Rosso corallo */
+
+    /* 2. Font moderno, leggibile e minimale */
+    --bs-font-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    /* 3. Angoli meno "giocattolosi" e più da software */
+    --bs-border-radius: 6px;
+    --bs-border-radius-lg: 8px;
+    --bs-border-radius-sm: 4px;
+}
+
+body {
+    background-color: #f8fafc !important;
+    /* Grigio chiarissimo, quasi ghiaccio */
+    color: #334155;
+    letter-spacing: -0.01em;
+    /* Avvicina leggermente le lettere per un look editoriale */
+}
+
+/* 4. Ombre morbidissime e diffuse (stile Apple/Notion) */
+.shadow-sm {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+.shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+}
+
+.shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025) !important;
+}
+
+/* 5. Pulizia delle Card (Bordi delicati, header flat) */
+.card {
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    transition: all 0.2s ease-in-out;
+}
+
+.card-header {
+    background-color: transparent !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+    color: var(--bs-primary) !important;
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+}
+
+/* 6. Form e Input eleganti (Bagliore morbido invece del bordo duro) */
+.form-control,
+.form-select {
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) inset;
+    font-size: 0.95rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #94a3b8;
+    box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.1);
+}
+
+/* 7. Bottoni più raffinati */
+.btn {
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+}
+
+.btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.btn-primary:hover {
+    background-color: #1e293b;
+    border-color: #1e293b;
+}
+
+/* 8. Dettagli UI (Badge, Stepper) */
+.badge {
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    padding: 0.4em 0.65em;
+}
+
+.stepper-group {
+    border: 1px solid #e2e8f0;
+    border-radius: var(--bs-border-radius);
+    background-color: #fff;
+}
+
+.stepper-btn {
+    background-color: #f8fafc;
+    color: #475569;
+    border: none;
+    transition: 0.1s;
+}
+
+.stepper-btn:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+}
+
+/* ==========================================
    1. STILI PER LA STAMPA (PDF)
    ========================================== */
 @media print {

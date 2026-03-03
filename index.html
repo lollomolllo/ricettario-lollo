@@ -7,22 +7,25 @@
     <title>Ricettario LOCALE</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0d6efd">
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="style.css">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Ricettario">
     <link rel="apple-touch-icon" href="https://placehold.co/192x192/0d6efd/ffffff.png?text=R">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <div id="login-container" class="container mt-5" style="max-width: 400px;">
         <div class="card shadow border-primary">
             <div class="card-body p-4">
-                <h3 class="card-title text-center mb-4 fw-bold text-primary">🔐 Area Riservata</h3>
+                <h3 class="card-title text-center mb-4 fw-bold text-primary"><i class="bi bi-lock-fill"></i> Area
+                    Riservata</h3>
                 <form id="form-login">
                     <div class="mb-3">
                         <label class="form-label fw-bold small text-muted">Email</label>
@@ -46,13 +49,17 @@
             <div class="container-fluid">
                 <a class="navbar-brand fw-bold" href="#">Ricettario LOCALE</a>
                 <div class="collapse navbar-collapse d-flex justify-content-end" id="navbarNav">
-                    <ul class="navbar-nav mb-2 mb-lg-0">
-                        <li class="nav-item"><a class="nav-link active" href="#" id="nav-elenco">📚 Ricettario</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#" id="nav-calendario">🗓️ Calendario</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#" id="nav-spesa">🛒 Spesa</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#" id="nav-impostazioni">⚙️ Impostazioni</a></li>
-                        <li class="nav-item"><a class="nav-link text-danger fw-bold" href="#" id="nav-logout">🚪
-                                Esci</a></li>
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0 gap-2">
+                        <li class="nav-item"><a class="nav-link active fw-medium" href="#" id="nav-elenco"><i
+                                    class="bi bi-grid-fill me-1"></i> Galleria</a></li>
+                        <li class="nav-item"><a class="nav-link fw-medium" href="#" id="nav-calendario"><i
+                                    class="bi bi-calendar-event me-1"></i> Calendario</a></li>
+                        <li class="nav-item"><a class="nav-link fw-medium" href="#" id="nav-spesa"><i
+                                    class="bi bi-cart3 me-1"></i> Spesa <span
+                                    class="badge bg-danger rounded-pill ms-1 d-none" id="badge-spesa-nav">0</span></a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link fw-medium" href="#" id="nav-impostazioni"><i
+                                    class="bi bi-gear me-1"></i> Impostazioni</a></li>
                     </ul>
                 </div>
             </div>
@@ -62,23 +69,29 @@
             <div class="alert alert-info text-center">Inizializzazione applicazione in corso...</div>
         </main>
 
-        <nav id="bottom-nav" class="d-md-none shadow-lg">
-            <a href="#" class="bottom-nav-item active" id="bot-nav-elenco"><span
-                    class="fs-4 mb-1">📚</span><span>Ricette</span></a>
-            <a href="#" class="bottom-nav-item" id="bot-nav-calendario"><span
-                    class="fs-4 mb-1">📅</span><span>Diario</span></a>
-            <a href="#" class="bottom-nav-item" id="bot-nav-spesa"><span
-                    class="fs-4 mb-1">🛒</span><span>Spesa</span></a>
-            <a href="#" class="bottom-nav-item" id="bot-nav-impostazioni"><span
-                    class="fs-4 mb-1">⚙️</span><span>Impostazioni</span></a>
-        </nav>
+        <div class="nav-bottom d-md-none shadow-lg">
+            <a href="#" class="nav-bottom-item active" id="bot-nav-galleria">
+                <i class="bi bi-grid-fill fs-4"></i><span class="small">Galleria</span>
+            </a>
+            <a href="#" class="nav-bottom-item" id="bot-nav-calendario">
+                <i class="bi bi-calendar-event fs-4"></i><span class="small">Diario</span>
+            </a>
+            <a href="#" class="nav-bottom-item position-relative" id="bot-nav-spesa">
+                <i class="bi bi-cart3 fs-4"></i><span class="small">Spesa</span>
+                <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-danger d-none"
+                    id="badge-spesa-bot" style="font-size: 0.6rem;">0</span>
+            </a>
+            <a href="#" class="nav-bottom-item" id="bot-nav-impostazioni">
+                <i class="bi bi-gear fs-4"></i><span class="small">Impost.</span>
+            </a>
+        </div>
 
     </div>
     <div class="modal fade" id="modal-calcolatore-teglie" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header bg-info text-dark border-0">
-                    <h5 class="modal-title fw-bold">📐 Calcolatore Teglie</h5>
+                    <h5 class="modal-title fw-bold"><i class="bi bi-calculator"></i> Calcolatore Teglie</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4 bg-light">
@@ -143,7 +156,7 @@
                         <h1 class="display-4 fw-bold text-muted" id="calc-risultato">---</h1>
                         <button class="btn btn-info w-100 fw-bold shadow-sm mt-3 text-white" id="btn-applica-teglia"
                             disabled>
-                            ✨ Applica alla ricetta attuale
+                            Applica alla ricetta attuale
                         </button>
                     </div>
                 </div>
