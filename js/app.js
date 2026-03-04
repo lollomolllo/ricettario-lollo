@@ -178,7 +178,7 @@ function inizializzaNavbar() {
     const navImpostazioni = document.getElementById('nav-impostazioni');
     const navLogout = document.getElementById('nav-logout');
 
-    const botElenco = document.getElementById('bot-nav-galleria');
+    const botElenco = document.getElementById('bot-nav-elenco');
     const botCalendario = document.getElementById('bot-nav-calendario');
     const botSpesa = document.getElementById('bot-nav-spesa');
     const botImpostazioni = document.getElementById('bot-nav-impostazioni');
