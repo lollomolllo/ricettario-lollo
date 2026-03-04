@@ -460,13 +460,6 @@ body {
         transition: color 0.2s;
     }
 
-    /* 9. Fix Definitivo: Rende tutto il contenuto dei bottoni trasparente al click */
-    .nav-link *,
-    .bottom-nav-item *,
-    .btn * {
-        pointer-events: none;
-    }
-
     .bottom-nav-item.active {
         color: #C5832B;
         transform: scale(1.1);
