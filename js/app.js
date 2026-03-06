@@ -1062,6 +1062,52 @@ async function apriDettaglioRicetta(id_ricetta) {
         const ricetta = await API.getRicettaCompleta(id_ricetta);
         UI.renderDettaglio(ricetta);
 
+        // --- INIZIO MOTORE SPLIT PANE ---
+        const dLeftPane = document.getElementById('dettaglio-leftPane');
+        const dGutter = document.getElementById('dettaglio-gutter');
+
+        if (dLeftPane && dGutter) {
+            let isDragging = false;
+            const containerSplit = dLeftPane.parentElement;
+
+            dGutter.addEventListener('mousedown', function (e) {
+                isDragging = true;
+                document.body.style.cursor = 'col-resize';
+                dGutter.classList.add('active');
+
+                // Trucco fondamentale: impedisce di evidenziare il testo mentre trascini!
+                document.body.style.userSelect = 'none';
+            });
+
+            document.addEventListener('mousemove', function (e) {
+                if (!isDragging) return;
+
+                const containerRect = containerSplit.getBoundingClientRect();
+                let newWidth = e.clientX - containerRect.left;
+
+                // Mettiamo dei paletti per evitare che l'utente distrugga la UI
+                const minWidth = containerRect.width * 0.35; // Minimo 35%
+                const maxWidth = containerRect.width * 0.75; // Massimo 75%
+
+                if (newWidth < minWidth) newWidth = minWidth;
+                if (newWidth > maxWidth) newWidth = maxWidth;
+
+                // Applichiamo la percentuale
+                const percentage = (newWidth / containerRect.width) * 100;
+                dLeftPane.style.width = percentage + '%';
+            });
+
+            document.addEventListener('mouseup', function () {
+                if (isDragging) {
+                    isDragging = false;
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                    dGutter.classList.remove('active');
+                }
+            });
+        }
+        // --- FINE MOTORE SPLIT PANE ---
+
         const inputRicalcolo = document.getElementById('input-ricalcolo');
         const listIng = document.getElementById('lista-ingredienti-ricalcolati');
         const contSotto = document.getElementById('container-sottoricette-ricalcolate');

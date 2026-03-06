@@ -767,10 +767,10 @@ const UI = {
                     ${ricetta.note ? `<div class="alert alert-info border-0 shadow-sm mb-0" style="white-space: pre-wrap;"><strong>Note:</strong><br>${ricetta.note}</div>` : ''}                </div>
             </div>
 
-            <div class="row align-items-start">
+            <div class="split-container-dettaglio mb-4">
                 
-                <div class="col-lg-8 mb-4">
-                    <div class="card shadow-sm border-0">
+                <div class="pane-left-dettaglio" id="dettaglio-leftPane">
+                    <div class="card shadow-sm border-0 h-100">
                         <div class="card-body">
                             <h3 class="fw-bold mb-4 border-bottom pb-2">Procedimento</h3>
                             ${stepHTML || '<p class="text-muted">Nessun procedimento inserito.</p>'}
@@ -778,7 +778,11 @@ const UI = {
                     </div>
                 </div>
 
-                <div class="col-lg-4 mb-4">
+                <div class="gutter-dettaglio d-none d-lg-flex" id="dettaglio-gutter" title="Trascina per ridimensionare">
+                    <i class="bi bi-grip-vertical"></i>
+                </div>
+
+                <div class="pane-right-dettaglio" id="dettaglio-rightPane">
                     <div class="card shadow-sm border-primary sticky-top" style="top: 20px; z-index: 1;">
                         <div class="card-header bg-primary text-white text-center">
                             <span class="fw-bold fs-5">INGREDIENTI</span>
@@ -805,6 +809,7 @@ const UI = {
                         </div>
                     </div>
                 </div>
+
             </div>
         `;
     },

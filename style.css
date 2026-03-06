@@ -613,3 +613,73 @@ body.accesso-limitato #sezione-preferenze {
     max-width: 600px;
     /* Rende la card elegante e non troppo schiacciata */
 }
+
+/* ==========================================
+   SPLIT PANE DETTAGLIO RICETTA
+   ========================================== */
+.split-container-dettaglio {
+    display: flex;
+    flex-direction: column;
+    /* Default per smartphone (impilati) */
+    width: 100%;
+    gap: 1.5rem;
+}
+
+.pane-left-dettaglio,
+.pane-right-dettaglio {
+    width: 100%;
+}
+
+/* Solo su schermi grandi (PC/Tablet orizzontale) attiviamo lo split */
+@media (min-width: 992px) {
+    .split-container-dettaglio {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 0;
+    }
+
+    .pane-left-dettaglio {
+        width: 60%;
+        /* Misura di partenza */
+        padding-right: 15px;
+    }
+
+    .pane-right-dettaglio {
+        flex: 1;
+        /* Occupa tutto lo spazio lasciato libero dal primo */
+        padding-left: 15px;
+        min-width: 280px;
+        /* Limite per non far sparire la card ingredienti */
+    }
+
+    .gutter-dettaglio {
+        width: 16px;
+        cursor: col-resize;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: background 0.2s ease;
+        margin-top: 50px;
+        /* Allinea visivamente la maniglia */
+        min-height: 200px;
+    }
+
+    .gutter-dettaglio:hover,
+    .gutter-dettaglio.active {
+        background: rgba(51, 65, 85, 0.1);
+        /* Sfondo delicato in hover */
+    }
+
+    .gutter-dettaglio i {
+        color: #cbd5e1;
+        font-size: 20px;
+        transition: color 0.2s;
+    }
+
+    .gutter-dettaglio:hover i,
+    .gutter-dettaglio.active i {
+        color: var(--bs-primary);
+    }
+}
