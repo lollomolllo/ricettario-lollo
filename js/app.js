@@ -1702,9 +1702,73 @@ async function initCalendario() {
                     }
                 });
 
+                // Salva nel Calendario (Database Storico)
                 await API.registraProduzione(prodSalvare, noteAgg);
-                alert("Produzione Registrata!");
 
+                // ==========================================
+                // MAGIA: AUTOMAZIONE LISTA DELLA SPESA
+                // ==========================================
+                const oggi = new Date();
+                oggi.setHours(0, 0, 0, 0); // Azzera ore, minuti e secondi per calcolare solo la data pura
+                const dataProduzione = new Date(dataSv);
+                dataProduzione.setHours(0, 0, 0, 0);
+
+                // Se la data scelta è DOMANI o oltre...
+                if (dataProduzione > oggi) {
+                    // Trova quante porzioni finali il pasticcere ha deciso di produrre per la ricetta Padre
+                    const rigaPadre = document.querySelector('.riga-padre');
+                    const vInp = rigaPadre.querySelector('.input-porzioni-reali');
+                    const porzioniPadreEffettive = rigaPadre.querySelector('.check-porzioni-modificate').checked ? parseFloat(vInp.value) : parseFloat(vInp.getAttribute('data-base'));
+
+                    // 1. Scarica il carrello della spesa attuale dal cloud
+                    let spesa = await API.getSpesa();
+                    if (!spesa) spesa = { ricetteInMenu: [], spunte: {} };
+                    if (!spesa.ricetteInMenu) spesa.ricetteInMenu = [];
+
+                    // 2. Calcola le quantità esatte della ricetta e delle sue sottoricette
+                    const rapporto = porzioniPadreEffettive / (rSelCom.porzioni_base || 1);
+                    let ingredientiEstratti = [];
+
+                    if (rSelCom.ingredienti) {
+                        rSelCom.ingredienti.forEach(ing => {
+                            if (ing.unita_distinta === 'SEZIONE') return;
+                            ingredientiEstratti.push({ nome: ing.nome_ingrediente, unita: ing.unita_distinta, qta: ing.quantita * rapporto });
+                        });
+                    }
+
+                    if (rSelCom.sottoricette_esplose && rSelCom.sottoricette_esplose.length > 0) {
+                        rSelCom.sottoricette_esplose.forEach(sr => {
+                            const rFiglia = sr.ricetta_figlia;
+                            if (!rFiglia || !rFiglia.ingredienti) return;
+
+                            const moltiplicatoreReale = parseFloat(sr.moltiplicatore) || 1;
+                            const rapportoSotto = rapporto * moltiplicatoreReale;
+
+                            rFiglia.ingredienti.forEach(subIng => {
+                                if (subIng.unita_distinta === 'SEZIONE') return;
+                                ingredientiEstratti.push({ nome: subIng.nome_ingrediente, unita: subIng.unita_distinta, qta: subIng.quantita * rapportoSotto });
+                            });
+                        });
+                    }
+
+                    // 3. Aggiunge tutto alla lista in cloud
+                    spesa.ricetteInMenu.push({
+                        id: rSelCom.id,
+                        nome: `${rSelCom.nome} (Per il ${dataIt})`, // Mette un promemoria nel carrello!
+                        porzioni: porzioniPadreEffettive,
+                        ingredientiEsplosi: ingredientiEstratti
+                    });
+
+                    await API.saveSpesa(spesa);
+
+                    alert(`✅ Produzione registrata!\n🛒 Essendo futura, la ricetta è stata aggiunta automaticamente alla tua Lista della Spesa per il ${dataIt}.`);
+                } else {
+                    // Se la data è passata o è oggi
+                    alert("✅ Produzione passata registrata nello storico!");
+                }
+                // ==========================================
+
+                // Pulisce l'interfaccia
                 fCont.classList.add('d-none');
                 document.getElementById('form-produzione').reset();
                 if (inputRicercaProd) inputRicercaProd.value = '';
@@ -1712,6 +1776,7 @@ async function initCalendario() {
                 document.getElementById('prod-dettagli-dinamici').innerHTML = '';
                 rSelCom = null;
 
+                // Aggiorna calendario visivo
                 storico = await API.getStorico();
                 aggiornaStatistiche();
                 renderVista();
